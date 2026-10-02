@@ -21,7 +21,7 @@ def get_groq_client():
 def generate_response(
     system_prompt,
     user_prompt,
-    max_tokens=1200,
+    max_tokens=1800,
 ):
     """
     Send a prompt to GPT-OSS 120B through Groq.
