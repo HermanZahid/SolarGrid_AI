@@ -1,11 +1,8 @@
 import streamlit as st
 
 from rag.rag_engine import LocalRAG
+from agents.regulatory_agent import analyze_regulatory_question
 
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
 
 st.set_page_config(
     page_title="SolarGrid AI",
@@ -14,9 +11,9 @@ st.set_page_config(
 )
 
 
-# =========================================================
-# GLOBAL STYLING
-# =========================================================
+# ---------------------------------------------------------
+# Styling
+# ---------------------------------------------------------
 
 st.markdown(
     """
@@ -38,12 +35,9 @@ st.markdown(
         font-size: 0.85rem;
     }
 
-    .source-box {
-        padding: 14px;
-        border-radius: 12px;
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        background: rgba(30, 41, 59, 0.35);
-        margin-bottom: 10px;
+    .agent-status {
+        font-size: 0.85rem;
+        color: #94a3b8;
     }
     </style>
     """,
@@ -51,9 +45,9 @@ st.markdown(
 )
 
 
-# =========================================================
-# LOAD RAG
-# =========================================================
+# ---------------------------------------------------------
+# Load RAG
+# ---------------------------------------------------------
 
 @st.cache_resource
 def load_rag():
@@ -63,9 +57,9 @@ def load_rag():
 rag = load_rag()
 
 
-# =========================================================
-# SIDEBAR
-# =========================================================
+# ---------------------------------------------------------
+# Sidebar
+# ---------------------------------------------------------
 
 with st.sidebar:
 
@@ -122,7 +116,7 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("RAG Status")
+    st.subheader("System Status")
 
     status = rag.status()
 
@@ -136,10 +130,25 @@ with st.sidebar:
         status["indexed_sources"],
     )
 
+    # Check whether Groq secret is available.
+    try:
+        groq_configured = "GROQ_API_KEY" in st.secrets
+    except Exception:
+        groq_configured = False
 
-# =========================================================
-# HEADER
-# =========================================================
+    if groq_configured:
+        st.success("🟢 Groq API configured")
+    else:
+        st.warning("🟡 Groq API key not configured")
+
+    st.caption(
+        "LLM: openai/gpt-oss-120b"
+    )
+
+
+# ---------------------------------------------------------
+# Header
+# ---------------------------------------------------------
 
 st.title("☀️ SolarGrid AI")
 
@@ -151,9 +160,9 @@ st.caption(
 st.divider()
 
 
-# =========================================================
-# PROJECT COMMAND CENTER
-# =========================================================
+# ---------------------------------------------------------
+# Project Command Center
+# ---------------------------------------------------------
 
 st.header("Project Command Center")
 
@@ -184,9 +193,9 @@ with c4:
     )
 
 
-# =========================================================
-# AI WORKFLOW
-# =========================================================
+# ---------------------------------------------------------
+# AI Workflow
+# ---------------------------------------------------------
 
 st.header("AI Workflow")
 
@@ -200,14 +209,17 @@ workflow = [
     ("⚙️", "Technical Engineer", "Ready"),
     ("🔌", "Grid Engineer", "Ready"),
     ("💰", "Financial Analyst", "Ready"),
-    ("📚", "Regulatory Intelligence", "RAG Ready"),
+    ("📚", "Regulatory Intelligence", "GPT-OSS + RAG"),
     ("⚠️", "Risk Analyst", "Ready"),
     ("🧠", "Project Manager", "Ready"),
 ]
 
 cols = st.columns(len(workflow))
 
-for col, (icon, name, agent_status) in zip(cols, workflow):
+for col, (icon, name, agent_status) in zip(
+    cols,
+    workflow,
+):
 
     with col:
 
@@ -218,13 +230,14 @@ for col, (icon, name, agent_status) in zip(cols, workflow):
         )
 
 
-# =========================================================
-# TABS
-# =========================================================
+# ---------------------------------------------------------
+# Tabs
+# ---------------------------------------------------------
 
-tab1, tab2, tab3 = st.tabs(
+tab1, tab2, tab3, tab4 = st.tabs(
     [
         "🔎 Evidence Center",
+        "🤖 Regulatory AI",
         "🧪 RAG Test Lab",
         "📊 Diagnostics",
     ]
@@ -232,12 +245,14 @@ tab1, tab2, tab3 = st.tabs(
 
 
 # =========================================================
-# EVIDENCE CENTER
+# TAB 1 — Evidence Center
 # =========================================================
 
 with tab1:
 
-    st.subheader("Search Pakistan Energy Evidence")
+    st.subheader(
+        "Search Pakistan Energy Evidence"
+    )
 
     query = st.text_input(
         "Ask a regulatory or energy-sector question",
@@ -245,16 +260,20 @@ with tab1:
             "Example: What are the requirements "
             "for connecting a generation facility to the grid?"
         ),
+        key="evidence_query",
     )
 
     if st.button(
         "🔍 Retrieve Evidence",
         type="primary",
+        key="retrieve_evidence",
     ):
 
         if not query.strip():
 
-            st.warning("Please enter a question.")
+            st.warning(
+                "Please enter a question."
+            )
 
         else:
 
@@ -280,7 +299,10 @@ with tab1:
                     f"Retrieved {len(results)} relevant evidence passages."
                 )
 
-                for i, result in enumerate(results, start=1):
+                for i, result in enumerate(
+                    results,
+                    start=1,
+                ):
 
                     with st.expander(
                         f"[S{i}] {result['title']} — "
@@ -294,34 +316,238 @@ with tab1:
                             f"Relevance: {result['score']}"
                         )
 
-                        st.write(result["text"])
+                        st.write(
+                            result["text"]
+                        )
 
                         if result["url"]:
 
                             st.markdown(
-                                f"[📄 Open official source]({result['url']})"
+                                "[📄 Open official source]"
+                                f"({result['url']})"
                             )
 
 
 # =========================================================
-# RAG TEST LAB
+# TAB 2 — Regulatory AI
 # =========================================================
 
 with tab2:
 
-    st.subheader("RAG Retrieval Test Lab")
+    st.subheader(
+        "🤖 Regulatory Intelligence Agent"
+    )
+
+    st.caption(
+        "GPT-OSS 120B analyzes retrieved Pakistan-specific "
+        "regulatory evidence and cites the evidence used."
+    )
+
+    question = st.text_area(
+        "Regulatory question",
+        placeholder=(
+            "Example: What regulatory requirements should "
+            "a 50 MW solar PV project consider when connecting "
+            "to the Pakistani grid?"
+        ),
+        height=100,
+        key="regulatory_question",
+    )
+
+    st.markdown("### Current Project Context")
+
+    p1, p2, p3, p4 = st.columns(4)
+
+    with p1:
+        st.metric(
+            "Technology",
+            technology,
+        )
+
+    with p2:
+        st.metric(
+            "Capacity",
+            f"{capacity:g} MW",
+        )
+
+    with p3:
+        st.metric(
+            "Voltage",
+            grid_voltage,
+        )
+
+    with p4:
+        st.metric(
+            "Location",
+            location,
+        )
+
+    st.divider()
+
+    if st.button(
+        "🚀 Run Regulatory Intelligence Agent",
+        type="primary",
+        key="run_regulatory_agent",
+    ):
+
+        if not question.strip():
+
+            st.warning(
+                "Please enter a regulatory question."
+            )
+
+        elif not groq_configured:
+
+            st.error(
+                "GROQ_API_KEY is not configured. "
+                "Add it to Streamlit Community Cloud Secrets "
+                "before running the AI agent."
+            )
+
+        else:
+
+            project = {
+                "project_name": project_name,
+                "location": location,
+                "technology": technology,
+                "capacity": capacity,
+                "grid_voltage": grid_voltage,
+            }
+
+            # ---------------------------------------------
+            # Stage 1 — Retrieval
+            # ---------------------------------------------
+
+            with st.status(
+                "Running SolarGrid AI Regulatory Agent...",
+                expanded=True,
+            ) as agent_status:
+
+                st.write(
+                    "🔎 Retrieving relevant Pakistan regulatory evidence..."
+                )
+
+                result = analyze_regulatory_question(
+                    query=question,
+                    rag=rag,
+                    project=project,
+                )
+
+                evidence = result["evidence"]
+
+                st.write(
+                    f"📚 Retrieved {len(evidence)} evidence passages."
+                )
+
+                st.write(
+                    "🧠 Sending evidence to GPT-OSS 120B..."
+                )
+
+                st.write(
+                    "📝 Generating evidence-backed regulatory assessment..."
+                )
+
+                agent_status.update(
+                    label="Regulatory Agent completed",
+                    state="complete",
+                )
+
+            # ---------------------------------------------
+            # Result
+            # ---------------------------------------------
+
+            st.success(
+                "Regulatory Intelligence Agent completed."
+            )
+
+            st.markdown("## Regulatory Assessment")
+
+            st.markdown(
+                result["answer"]
+            )
+
+            # ---------------------------------------------
+            # Evidence Used
+            # ---------------------------------------------
+
+            st.divider()
+
+            st.subheader(
+                "📚 Evidence Used by the Agent"
+            )
+
+            if evidence:
+
+                for i, item in enumerate(
+                    evidence,
+                    start=1,
+                ):
+
+                    with st.expander(
+                        f"[S{i}] {item['title']} — "
+                        f"{item['section']}",
+                        expanded=(i == 1),
+                    ):
+
+                        st.caption(
+                            f"{item['authority']} | "
+                            f"{item['date']} | "
+                            f"Relevance: {item['score']}"
+                        )
+
+                        st.write(
+                            item["text"]
+                        )
+
+                        if item["url"]:
+
+                            st.markdown(
+                                "[📄 Open official source]"
+                                f"({item['url']})"
+                            )
+
+            else:
+
+                st.warning(
+                    "No evidence was retrieved."
+                )
+
+
+# =========================================================
+# TAB 3 — RAG Test Lab
+# =========================================================
+
+with tab3:
+
+    st.subheader(
+        "RAG Retrieval Test Lab"
+    )
 
     st.write(
         "These tests allow us to verify retrieval before "
-        "connecting the Groq LLM."
+        "connecting additional AI agents."
     )
 
     test_questions = [
-        "What are the requirements for connecting a generation facility to the grid?",
-        "What technical code must a generation facility comply with?",
-        "What is the 25 kW threshold in the 2026 prosumer amendment?",
-        "What is the National Electricity Plan 2023-27?",
-        "What does Pakistan's Fast Track Solar PV initiative cover?",
+        (
+            "What are the requirements for connecting "
+            "a generation facility to the grid?"
+        ),
+        (
+            "What technical code must a generation "
+            "facility comply with?"
+        ),
+        (
+            "What is the 25 kW threshold in the "
+            "2026 prosumer amendment?"
+        ),
+        (
+            "What is the National Electricity Plan 2023-27?"
+        ),
+        (
+            "What does Pakistan's Fast Track Solar PV "
+            "initiative cover?"
+        ),
     ]
 
     selected_question = st.selectbox(
@@ -332,6 +558,7 @@ with tab2:
     if st.button(
         "▶ Run RAG Test",
         type="primary",
+        key="run_rag_test",
     ):
 
         results = rag.search(
@@ -351,7 +578,10 @@ with tab2:
                 f"RAG retrieved {len(results)} passages."
             )
 
-            for i, result in enumerate(results, start=1):
+            for i, result in enumerate(
+                results,
+                start=1,
+            ):
 
                 with st.expander(
                     f"[S{i}] {result['title']} — "
@@ -359,7 +589,9 @@ with tab2:
                     expanded=(i == 1),
                 ):
 
-                    st.write(result["text"])
+                    st.write(
+                        result["text"]
+                    )
 
                     st.caption(
                         f"Relevance score: {result['score']}"
@@ -368,21 +600,28 @@ with tab2:
                     if result["url"]:
 
                         st.markdown(
-                            f"[📄 Open official source]({result['url']})"
+                            "[📄 Open official source]"
+                            f"({result['url']})"
                         )
 
 
 # =========================================================
-# DIAGNOSTICS
+# TAB 4 — Diagnostics
 # =========================================================
 
-with tab3:
+with tab4:
 
-    st.subheader("Knowledge Base Diagnostics")
+    st.subheader(
+        "Knowledge Base Diagnostics"
+    )
 
-    st.json(status)
+    st.json(
+        status
+    )
 
-    st.markdown("### Indexed Sources")
+    st.markdown(
+        "### Indexed Sources"
+    )
 
     indexed_titles = sorted(
         {
@@ -394,9 +633,13 @@ with tab3:
 
     for title in indexed_titles:
 
-        st.write(f"✓ {title}")
+        st.write(
+            f"✓ {title}"
+        )
 
-    st.markdown("### Indexed Passages")
+    st.markdown(
+        "### Indexed Passages"
+    )
 
     for document in rag.documents:
 
