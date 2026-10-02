@@ -3,9 +3,9 @@ import streamlit as st
 from rag.rag_engine import LocalRAG
 
 
-# ---------------------------------------------------------
+# =========================================================
 # PAGE CONFIG
-# ---------------------------------------------------------
+# =========================================================
 
 st.set_page_config(
     page_title="SolarGrid AI",
@@ -14,117 +14,46 @@ st.set_page_config(
 )
 
 
-# ---------------------------------------------------------
-# CUSTOM CSS
-# ---------------------------------------------------------
+# =========================================================
+# GLOBAL STYLING
+# =========================================================
 
 st.markdown(
     """
     <style>
-
-    .main {
-        background: #0b1220;
-    }
-
     .block-container {
         max-width: 1400px;
         padding-top: 2rem;
         padding-bottom: 4rem;
     }
 
-    .hero {
-        padding: 1.5rem 1.8rem;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 18px;
-        background: linear-gradient(
-            135deg,
-            rgba(30,41,59,0.85),
-            rgba(15,23,42,0.95)
-        );
-        margin-bottom: 1.5rem;
-    }
-
-    .hero-title {
-        font-size: 2.4rem;
-        font-weight: 700;
-        margin-bottom: 0.3rem;
-    }
-
-    .hero-subtitle {
-        color: #aab4c5;
-        font-size: 1rem;
-    }
-
-    .metric-card {
-        padding: 1.2rem;
+    [data-testid="stMetric"] {
+        background: rgba(30, 41, 59, 0.45);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        padding: 15px;
         border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(30,41,59,0.55);
-        min-height: 120px;
     }
 
-    .metric-label {
-        color: #94a3b8;
+    [data-testid="stMetricLabel"] {
         font-size: 0.85rem;
     }
 
-    .metric-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-top: 0.4rem;
-    }
-
-    .source-card {
-        padding: 1rem 1.2rem;
+    .source-box {
+        padding: 14px;
         border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(15,23,42,0.75);
-        margin-bottom: 0.8rem;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        background: rgba(30, 41, 59, 0.35);
+        margin-bottom: 10px;
     }
-
-    .source-label {
-        color: #60a5fa;
-        font-weight: 700;
-    }
-
-    .source-meta {
-        color: #94a3b8;
-        font-size: 0.85rem;
-    }
-
-    .agent-card {
-        padding: 1rem;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(30,41,59,0.55);
-        text-align: center;
-        min-height: 120px;
-    }
-
-    .agent-icon {
-        font-size: 1.5rem;
-    }
-
-    .agent-name {
-        font-weight: 600;
-        margin-top: 0.4rem;
-    }
-
-    .agent-status {
-        color: #94a3b8;
-        font-size: 0.8rem;
-        margin-top: 0.3rem;
-    }
-
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # LOAD RAG
-# ---------------------------------------------------------
+# =========================================================
 
 @st.cache_resource
 def load_rag():
@@ -134,13 +63,13 @@ def load_rag():
 rag = load_rag()
 
 
-# ---------------------------------------------------------
+# =========================================================
 # SIDEBAR
-# ---------------------------------------------------------
+# =========================================================
 
 with st.sidebar:
 
-    st.markdown("## ☀️ SolarGrid AI")
+    st.title("☀️ SolarGrid AI")
 
     st.caption(
         "Pakistan Renewable Energy Intelligence "
@@ -149,16 +78,16 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("### Project")
+    st.subheader("Project")
 
     project_name = st.text_input(
         "Project name",
-        value="Demo Solar PV Project",
+        "Demo Solar PV Project",
     )
 
     location = st.text_input(
         "Location",
-        value="Pakistan",
+        "Pakistan",
     )
 
     technology = st.selectbox(
@@ -193,7 +122,7 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("### RAG Diagnostics")
+    st.subheader("RAG Status")
 
     status = rag.status()
 
@@ -208,92 +137,65 @@ with st.sidebar:
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # HEADER
-# ---------------------------------------------------------
+# =========================================================
 
-st.markdown(
-    """
-    <div class="hero">
+st.title("☀️ SolarGrid AI")
 
-        <div class="hero-title">
-            ☀️ SolarGrid AI
-        </div>
-
-        <div class="hero-subtitle">
-            Evidence-driven renewable-energy project intelligence
-            for Pakistan
-        </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True,
+st.caption(
+    "Evidence-driven renewable-energy project intelligence "
+    "for Pakistan"
 )
 
+st.divider()
 
-# ---------------------------------------------------------
-# PROJECT OVERVIEW
-# ---------------------------------------------------------
 
-st.markdown("## Project Command Center")
+# =========================================================
+# PROJECT COMMAND CENTER
+# =========================================================
+
+st.header("Project Command Center")
 
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Project</div>
-            <div class="metric-value">{project_name}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        "Project",
+        project_name,
     )
 
 with c2:
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Technology</div>
-            <div class="metric-value">{technology}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        "Technology",
+        technology,
     )
 
 with c3:
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Capacity</div>
-            <div class="metric-value">{capacity:g} MW</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        "Capacity",
+        f"{capacity:g} MW",
     )
 
 with c4:
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">Grid Connection</div>
-            <div class="metric-value">{grid_voltage}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        "Grid Connection",
+        grid_voltage,
     )
 
 
-st.markdown("")
-
-
-# ---------------------------------------------------------
+# =========================================================
 # AI WORKFLOW
-# ---------------------------------------------------------
+# =========================================================
 
-st.markdown("## AI Workflow")
+st.header("AI Workflow")
 
-agents = [
+st.caption(
+    "Multi-agent architecture for renewable-energy "
+    "project intelligence"
+)
+
+workflow = [
     ("📥", "Project Intake", "Ready"),
     ("⚙️", "Technical Engineer", "Ready"),
     ("🔌", "Grid Engineer", "Ready"),
@@ -303,37 +205,22 @@ agents = [
     ("🧠", "Project Manager", "Ready"),
 ]
 
-cols = st.columns(len(agents))
+cols = st.columns(len(workflow))
 
-for col, (icon, name, status_text) in zip(cols, agents):
+for col, (icon, name, agent_status) in zip(cols, workflow):
 
     with col:
 
-        st.markdown(
-            f"""
-            <div class="agent-card">
-
-                <div class="agent-icon">
-                    {icon}
-                </div>
-
-                <div class="agent-name">
-                    {name}
-                </div>
-
-                <div class="agent-status">
-                    ● {status_text}
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True,
+        st.info(
+            f"{icon}\n\n"
+            f"**{name}**\n\n"
+            f"_{agent_status}_"
         )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # TABS
-# ---------------------------------------------------------
+# =========================================================
 
 tab1, tab2, tab3 = st.tabs(
     [
@@ -350,7 +237,7 @@ tab1, tab2, tab3 = st.tabs(
 
 with tab1:
 
-    st.markdown("### Search Pakistan Energy Evidence")
+    st.subheader("Search Pakistan Energy Evidence")
 
     query = st.text_input(
         "Ask a regulatory or energy-sector question",
@@ -358,15 +245,12 @@ with tab1:
             "Example: What are the requirements "
             "for connecting a generation facility to the grid?"
         ),
-        key="evidence_query",
     )
 
-    search_button = st.button(
+    if st.button(
         "🔍 Retrieve Evidence",
         type="primary",
-    )
-
-    if search_button:
+    ):
 
         if not query.strip():
 
@@ -374,7 +258,9 @@ with tab1:
 
         else:
 
-            with st.spinner("Searching the knowledge base..."):
+            with st.spinner(
+                "Searching the Pakistan energy knowledge base..."
+            ):
 
                 results = rag.search(
                     query,
@@ -396,40 +282,25 @@ with tab1:
 
                 for i, result in enumerate(results, start=1):
 
-                    st.markdown(
-                        f"""
-                        <div class="source-card">
+                    with st.expander(
+                        f"[S{i}] {result['title']} — "
+                        f"{result['section']}",
+                        expanded=(i == 1),
+                    ):
 
-                            <div class="source-label">
-                                [S{i}] {result['title']}
-                            </div>
-
-                            <div class="source-meta">
-                                {result['authority']}
-                                &nbsp; | &nbsp;
-                                {result['date']}
-                                &nbsp; | &nbsp;
-                                Section: {result['section']}
-                            </div>
-
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-
-                    st.write(result["text"])
-
-                    st.caption(
-                        f"Relevance score: {result['score']}"
-                    )
-
-                    if result["url"]:
-
-                        st.markdown(
-                            f"[Official source]({result['url']})"
+                        st.caption(
+                            f"{result['authority']} | "
+                            f"{result['date']} | "
+                            f"Relevance: {result['score']}"
                         )
 
-                    st.divider()
+                        st.write(result["text"])
+
+                        if result["url"]:
+
+                            st.markdown(
+                                f"[📄 Open official source]({result['url']})"
+                            )
 
 
 # =========================================================
@@ -438,11 +309,11 @@ with tab1:
 
 with tab2:
 
-    st.markdown("### RAG Retrieval Test Lab")
+    st.subheader("RAG Retrieval Test Lab")
 
     st.write(
-        "Use these questions to verify that the retrieval "
-        "layer is finding the correct official evidence."
+        "These tests allow us to verify retrieval before "
+        "connecting the Groq LLM."
     )
 
     test_questions = [
@@ -459,7 +330,7 @@ with tab2:
     )
 
     if st.button(
-        "Run RAG Test",
+        "▶ Run RAG Test",
         type="primary",
     ):
 
@@ -484,19 +355,20 @@ with tab2:
 
                 with st.expander(
                     f"[S{i}] {result['title']} — "
-                    f"{result['section']}"
+                    f"{result['section']}",
+                    expanded=(i == 1),
                 ):
 
                     st.write(result["text"])
 
                     st.caption(
-                        f"Score: {result['score']} | "
-                        f"Authority: {result['authority']}"
+                        f"Relevance score: {result['score']}"
                     )
 
                     if result["url"]:
+
                         st.markdown(
-                            f"[Open official source]({result['url']})"
+                            f"[📄 Open official source]({result['url']})"
                         )
 
 
@@ -506,7 +378,7 @@ with tab2:
 
 with tab3:
 
-    st.markdown("### Knowledge Base Diagnostics")
+    st.subheader("Knowledge Base Diagnostics")
 
     st.json(status)
 
