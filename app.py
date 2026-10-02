@@ -1,66 +1,534 @@
-import os
 import streamlit as st
-from rag.rag_engine import LocalRAG, load_sources
 
-st.set_page_config(page_title="SolarGrid AI", page_icon="☀️", layout="wide")
+from rag.rag_engine import LocalRAG
 
-st.markdown("""<style>
-.block-container{max-width:1450px;padding-top:2rem}
-.sg-card{padding:1rem 1.2rem;border:1px solid rgba(255,255,255,.12);
-border-radius:16px;background:rgba(255,255,255,.045);margin:.7rem 0}
-.agent{padding:.85rem 1rem;border-radius:12px;border:1px solid rgba(255,255,255,.10);margin:.45rem 0}
-.small{color:#9aa4b2;font-size:.86rem}
-</style>""", unsafe_allow_html=True)
 
-st.title("☀️ SolarGrid AI")
-st.caption("Pakistan Renewable Energy Intelligence & Preliminary Feasibility Platform")
+# ---------------------------------------------------------
+# PAGE CONFIG
+# ---------------------------------------------------------
+
+st.set_page_config(
+    page_title="SolarGrid AI",
+    page_icon="☀️",
+    layout="wide",
+)
+
+
+# ---------------------------------------------------------
+# CUSTOM CSS
+# ---------------------------------------------------------
+
+st.markdown(
+    """
+    <style>
+
+    .main {
+        background: #0b1220;
+    }
+
+    .block-container {
+        max-width: 1400px;
+        padding-top: 2rem;
+        padding-bottom: 4rem;
+    }
+
+    .hero {
+        padding: 1.5rem 1.8rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        background: linear-gradient(
+            135deg,
+            rgba(30,41,59,0.85),
+            rgba(15,23,42,0.95)
+        );
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-title {
+        font-size: 2.4rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+
+    .hero-subtitle {
+        color: #aab4c5;
+        font-size: 1rem;
+    }
+
+    .metric-card {
+        padding: 1.2rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(30,41,59,0.55);
+        min-height: 120px;
+    }
+
+    .metric-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .metric-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-top: 0.4rem;
+    }
+
+    .source-card {
+        padding: 1rem 1.2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(15,23,42,0.75);
+        margin-bottom: 0.8rem;
+    }
+
+    .source-label {
+        color: #60a5fa;
+        font-weight: 700;
+    }
+
+    .source-meta {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .agent-card {
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(30,41,59,0.55);
+        text-align: center;
+        min-height: 120px;
+    }
+
+    .agent-icon {
+        font-size: 1.5rem;
+    }
+
+    .agent-name {
+        font-weight: 600;
+        margin-top: 0.4rem;
+    }
+
+    .agent-status {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+# ---------------------------------------------------------
+# LOAD RAG
+# ---------------------------------------------------------
+
+@st.cache_resource
+def load_rag():
+    return LocalRAG()
+
+
+rag = load_rag()
+
+
+# ---------------------------------------------------------
+# SIDEBAR
+# ---------------------------------------------------------
 
 with st.sidebar:
-    st.header("Project")
-    project=st.text_input("Project name","Multan Solar Project")
-    location=st.text_input("Location","Multan, Punjab")
-    technology=st.selectbox("Technology",["Solar PV"])
-    capacity=st.number_input("Capacity (MW)",0.1,5000.0,50.0,1.0)
-    land=st.number_input("Land area (acres)",1.0,100000.0,250.0,5.0)
-    grid=st.selectbox("Grid connection",["11 kV","33 kV","66 kV","132 kV","220 kV","Other"])
-    capex=st.number_input("Estimated CAPEX (PKR)",0.0,1e14,7.5e9,1e8)
-    life=st.number_input("Project life (years)",1,50,25)
 
-tabs=st.tabs(["🧭 Command Center","📚 Evidence Center","🛠️ RAG Diagnostics"])
+    st.markdown("## ☀️ SolarGrid AI")
 
-with tabs[0]:
-    a,b,c,d=st.columns(4)
-    a.metric("Capacity",f"{capacity:g} MW"); b.metric("Location",location)
-    c.metric("Grid",grid); d.metric("Life",f"{life} yr")
-    st.subheader("AI Feasibility Workflow")
-    for icon,name,desc in [
-        ("✓","Project Intake","Project information validated"),
-        ("○","Technical Engineer Agent","Solar generation and engineering assumptions"),
-        ("○","Grid Integration Agent","Grid requirements and interconnection evidence"),
-        ("○","Financial Analyst Agent","CAPEX, revenue and project economics"),
-        ("○","Regulatory Intelligence Agent","Pakistan regulatory/policy retrieval"),
-        ("○","Risk Analyst Agent","Technical, grid, financial and regulatory risks"),
-        ("○","Project Manager Agent","Evidence-backed synthesis and report")]:
-        st.markdown(f'<div class="agent"><b>{icon} {name}</b><br><span class="small">{desc}</span></div>',unsafe_allow_html=True)
-    st.markdown(f'<div class="sg-card"><b>{project}</b><br>{technology} · {location} · {capacity:g} MW · {land:g} acres · {grid}<br>Estimated CAPEX: PKR {capex:,.0f}</div>',unsafe_allow_html=True)
+    st.caption(
+        "Pakistan Renewable Energy Intelligence "
+        "& Preliminary Feasibility Platform"
+    )
 
-with tabs[1]:
-    st.subheader("Evidence Retrieval")
-    query=st.text_input("Question","What are the technical requirements for connecting a generation facility to the grid?")
-    k=st.slider("Retrieved passages",1,8,5)
-    if st.button("🔎 Retrieve Evidence",type="primary"):
-        rag=LocalRAG(); results=rag.search(query,k)
+    st.divider()
+
+    st.markdown("### Project")
+
+    project_name = st.text_input(
+        "Project name",
+        value="Demo Solar PV Project",
+    )
+
+    location = st.text_input(
+        "Location",
+        value="Pakistan",
+    )
+
+    technology = st.selectbox(
+        "Technology",
+        [
+            "Solar PV",
+            "Wind",
+            "Hydropower",
+            "Battery Energy Storage",
+            "Hybrid Renewable Energy",
+        ],
+    )
+
+    capacity = st.number_input(
+        "Capacity (MW)",
+        min_value=0.1,
+        value=50.0,
+        step=1.0,
+    )
+
+    grid_voltage = st.selectbox(
+        "Grid connection voltage",
+        [
+            "11 kV",
+            "33 kV",
+            "66 kV",
+            "132 kV",
+            "220 kV",
+            "Other",
+        ],
+    )
+
+    st.divider()
+
+    st.markdown("### RAG Diagnostics")
+
+    status = rag.status()
+
+    st.metric(
+        "Indexed passages",
+        status["indexed_passages"],
+    )
+
+    st.metric(
+        "Indexed sources",
+        status["indexed_sources"],
+    )
+
+
+# ---------------------------------------------------------
+# HEADER
+# ---------------------------------------------------------
+
+st.markdown(
+    """
+    <div class="hero">
+
+        <div class="hero-title">
+            ☀️ SolarGrid AI
+        </div>
+
+        <div class="hero-subtitle">
+            Evidence-driven renewable-energy project intelligence
+            for Pakistan
+        </div>
+
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+# ---------------------------------------------------------
+# PROJECT OVERVIEW
+# ---------------------------------------------------------
+
+st.markdown("## Project Command Center")
+
+c1, c2, c3, c4 = st.columns(4)
+
+with c1:
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">Project</div>
+            <div class="metric-value">{project_name}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with c2:
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">Technology</div>
+            <div class="metric-value">{technology}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with c3:
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">Capacity</div>
+            <div class="metric-value">{capacity:g} MW</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with c4:
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">Grid Connection</div>
+            <div class="metric-value">{grid_voltage}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+st.markdown("")
+
+
+# ---------------------------------------------------------
+# AI WORKFLOW
+# ---------------------------------------------------------
+
+st.markdown("## AI Workflow")
+
+agents = [
+    ("📥", "Project Intake", "Ready"),
+    ("⚙️", "Technical Engineer", "Ready"),
+    ("🔌", "Grid Engineer", "Ready"),
+    ("💰", "Financial Analyst", "Ready"),
+    ("📚", "Regulatory Intelligence", "RAG Ready"),
+    ("⚠️", "Risk Analyst", "Ready"),
+    ("🧠", "Project Manager", "Ready"),
+]
+
+cols = st.columns(len(agents))
+
+for col, (icon, name, status_text) in zip(cols, agents):
+
+    with col:
+
+        st.markdown(
+            f"""
+            <div class="agent-card">
+
+                <div class="agent-icon">
+                    {icon}
+                </div>
+
+                <div class="agent-name">
+                    {name}
+                </div>
+
+                <div class="agent-status">
+                    ● {status_text}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+# ---------------------------------------------------------
+# TABS
+# ---------------------------------------------------------
+
+tab1, tab2, tab3 = st.tabs(
+    [
+        "🔎 Evidence Center",
+        "🧪 RAG Test Lab",
+        "📊 Diagnostics",
+    ]
+)
+
+
+# =========================================================
+# EVIDENCE CENTER
+# =========================================================
+
+with tab1:
+
+    st.markdown("### Search Pakistan Energy Evidence")
+
+    query = st.text_input(
+        "Ask a regulatory or energy-sector question",
+        placeholder=(
+            "Example: What are the requirements "
+            "for connecting a generation facility to the grid?"
+        ),
+        key="evidence_query",
+    )
+
+    search_button = st.button(
+        "🔍 Retrieve Evidence",
+        type="primary",
+    )
+
+    if search_button:
+
+        if not query.strip():
+
+            st.warning("Please enter a question.")
+
+        else:
+
+            with st.spinner("Searching the knowledge base..."):
+
+                results = rag.search(
+                    query,
+                    k=5,
+                )
+
+            if not results:
+
+                st.warning(
+                    "No relevant evidence was found "
+                    "in the current knowledge base."
+                )
+
+            else:
+
+                st.success(
+                    f"Retrieved {len(results)} relevant evidence passages."
+                )
+
+                for i, result in enumerate(results, start=1):
+
+                    st.markdown(
+                        f"""
+                        <div class="source-card">
+
+                            <div class="source-label">
+                                [S{i}] {result['title']}
+                            </div>
+
+                            <div class="source-meta">
+                                {result['authority']}
+                                &nbsp; | &nbsp;
+                                {result['date']}
+                                &nbsp; | &nbsp;
+                                Section: {result['section']}
+                            </div>
+
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                    st.write(result["text"])
+
+                    st.caption(
+                        f"Relevance score: {result['score']}"
+                    )
+
+                    if result["url"]:
+
+                        st.markdown(
+                            f"[Official source]({result['url']})"
+                        )
+
+                    st.divider()
+
+
+# =========================================================
+# RAG TEST LAB
+# =========================================================
+
+with tab2:
+
+    st.markdown("### RAG Retrieval Test Lab")
+
+    st.write(
+        "Use these questions to verify that the retrieval "
+        "layer is finding the correct official evidence."
+    )
+
+    test_questions = [
+        "What are the requirements for connecting a generation facility to the grid?",
+        "What technical code must a generation facility comply with?",
+        "What is the 25 kW threshold in the 2026 prosumer amendment?",
+        "What is the National Electricity Plan 2023-27?",
+        "What does Pakistan's Fast Track Solar PV initiative cover?",
+    ]
+
+    selected_question = st.selectbox(
+        "Select a test question",
+        test_questions,
+    )
+
+    if st.button(
+        "Run RAG Test",
+        type="primary",
+    ):
+
+        results = rag.search(
+            selected_question,
+            k=3,
+        )
+
         if not results:
-            st.warning("No local PDFs are indexed yet. Add the official PDFs at the paths listed in data/sources.json.")
-        for r in results:
-            st.markdown(f'<div class="sg-card"><b>{r["title"]}</b><br><span class="small">{r["authority"]} · {r["date"]} · relevance {r["score"]}</span><hr>{r["text"]}</div>',unsafe_allow_html=True)
-            st.caption(f"Official source: {r['url']}")
 
-with tabs[2]:
-    st.subheader("RAG Diagnostics")
-    rag=LocalRAG(); s=rag.status()
-    c1,c2=st.columns(2); c1.metric("Indexed passages",s["indexed_passages"]); c2.metric("Indexed sources",s["indexed_sources"])
-    for src in load_sources():
-        path=os.path.join(os.path.dirname(__file__),src["local_file"])
-        st.write(("🟢" if os.path.isfile(path) else "⚪"),src["title"],"—",src["authority"],"—",src["status"])
-    st.info("The source registry is deliberately broader than the deployed local corpus. Very large or hard-to-download official documents will be handled separately rather than bloating the Streamlit deployment.")
+            st.error(
+                "RAG returned no evidence for this question."
+            )
+
+        else:
+
+            st.success(
+                f"RAG retrieved {len(results)} passages."
+            )
+
+            for i, result in enumerate(results, start=1):
+
+                with st.expander(
+                    f"[S{i}] {result['title']} — "
+                    f"{result['section']}"
+                ):
+
+                    st.write(result["text"])
+
+                    st.caption(
+                        f"Score: {result['score']} | "
+                        f"Authority: {result['authority']}"
+                    )
+
+                    if result["url"]:
+                        st.markdown(
+                            f"[Open official source]({result['url']})"
+                        )
+
+
+# =========================================================
+# DIAGNOSTICS
+# =========================================================
+
+with tab3:
+
+    st.markdown("### Knowledge Base Diagnostics")
+
+    st.json(status)
+
+    st.markdown("### Indexed Sources")
+
+    indexed_titles = sorted(
+        {
+            document["title"]
+            for document in rag.documents
+            if document.get("title")
+        }
+    )
+
+    for title in indexed_titles:
+
+        st.write(f"✓ {title}")
+
+    st.markdown("### Indexed Passages")
+
+    for document in rag.documents:
+
+        st.caption(
+            f"{document['title']} → "
+            f"{document['section']}"
+        )
