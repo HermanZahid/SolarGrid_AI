@@ -36,8 +36,6 @@ STRICT EVIDENCE RULES:
 
 RESPONSE STRUCTURE:
 
-## Regulatory Assessment
-
 Provide a concise answer to the user's question.
 
 ## Evidence-Backed Findings
@@ -123,7 +121,7 @@ Do not invent project-specific requirements or regulatory conclusions.
         answer = generate_response(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            max_tokens=1000,
+            max_tokens=1800,
         )
 
     except Exception as exc:
