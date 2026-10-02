@@ -1,89 +1,84 @@
 # National Electricity Policy 2021
 
-## Source Metadata
+## Metadata
 
-- **Authority:** Ministry of Energy (Power Division), Government of Pakistan
 - **Document:** National Electricity Policy 2021
+- **Issuing authority:** Ministry of Energy (Power Division), Government of Pakistan
 - **Date:** 3 February 2021
-- **Category:** Electricity Policy / Renewable Energy / Energy Planning
-- **Status:** National electricity policy framework
-- **Jurisdiction:** Pakistan
-- **Official Source:**
-  https://www.power.gov.pk/SiteImage/Policy/1-NationalElectricityPolicy2021.pdf
-
----
+- **Document type:** National electricity-sector policy
+- **Country:** Pakistan
+- **Source:** Government of Pakistan
+- **Source document:** National Electricity Policy 2021
 
 ## Purpose
 
-The National Electricity Policy 2021 provides the policy framework for development and regulation of Pakistan's electricity sector.
+The National Electricity Policy 2021 provides a policy framework for the development and governance of Pakistan's electricity sector. It establishes broad policy directions for electricity generation, transmission, distribution, market development, affordability, reliability, efficiency, and investment.
 
-It establishes policy directions for electricity generation, transmission, distribution, market development, affordability, reliability, efficiency, and related electricity-sector objectives.
-
----
+The policy provides strategic direction for the electricity sector and is intended to guide federal and provincial authorities, regulatory institutions, public-sector entities, and other electricity-sector stakeholders.
 
 ## Renewable Energy Context
 
-The policy provides the broader national policy context within which renewable-energy generation and electricity-sector development are planned.
+The policy supports diversification of Pakistan's electricity generation mix and recognizes the role of renewable energy resources in the future development of the electricity sector.
 
-Renewable-energy projects should therefore be considered in the context of Pakistan's wider electricity-sector objectives and planning framework.
+Renewable-energy development is relevant to Pakistan's electricity-sector objectives because increased use of indigenous renewable resources can contribute to diversification of generation, reduction of dependence on imported fuels, and development of additional electricity-generation capacity.
 
----
+Solar, wind, hydropower, and other renewable resources therefore form part of the broader electricity-sector planning and investment context.
 
-## Relevance to Renewable-Energy Projects
+## Relevance to Solar Energy Projects
 
-For SolarGrid AI, the National Electricity Policy can provide policy-level context when assessing:
+The National Electricity Policy 2021 provides a high-level policy context for renewable-energy development in Pakistan.
 
-1. Alignment of a renewable-energy project with national electricity-sector policy.
-2. Renewable-energy development within Pakistan's electricity-sector framework.
-3. Electricity-sector planning and development priorities.
-4. Policy considerations relevant to generation and grid development.
-5. The relationship between national policy and subsequent electricity-sector planning documents.
+For solar-energy project assessment, the policy can be used to understand:
 
----
+- the national electricity-sector policy direction;
+- the role of renewable energy in electricity-sector development;
+- the importance of generation diversification;
+- the policy environment within which renewable-energy projects are developed;
+- the relationship between national electricity planning and renewable-energy investment.
 
-## Relationship with the National Electricity Plan
+The policy should be treated as a strategic policy source rather than as a project-specific technical or financial feasibility document.
 
-The National Electricity Plan 2023–27 provides a planning framework for implementing electricity-sector priorities.
+## Relationship to Electricity Planning
 
-The National Electricity Policy 2021 should therefore be treated as a higher-level policy source, while the National Electricity Plan provides more specific planning direction for the 2023–27 period.
+The National Electricity Policy 2021 provides policy-level direction, while electricity planning documents provide more detailed information about projected electricity demand, generation requirements, capacity development, and system planning.
 
-SolarGrid AI should retrieve both sources when a question concerns the relationship between national electricity policy and electricity-sector planning.
+For SolarGrid AI, the policy should therefore be used together with more detailed electricity-planning documents when answering questions about specific generation requirements, capacity additions, project pipelines, or system-level planning.
 
----
+Where a question concerns numerical projections or specific capacity targets, the relevant electricity-planning document should be preferred over this high-level policy document.
 
-## SolarGrid AI Usage
+## Project Intelligence Use
 
-The Regulatory Intelligence Agent can use this source for questions such as:
+SolarGrid AI can use this document as evidence when answering questions concerning:
 
-- What is the national policy context for renewable-energy development in Pakistan?
-- What policy framework should be considered when assessing a renewable-energy project?
-- How does a renewable-energy project relate to Pakistan's broader electricity-sector policy?
+- Pakistan's national electricity-sector policy direction;
+- renewable-energy policy context;
+- the role of renewable energy in electricity-sector development;
+- strategic considerations relevant to solar-energy projects;
+- the relationship between electricity policy and renewable-energy development.
 
-The agent should use more specific NEPRA regulations and technical standards when answering detailed regulatory or grid-connection questions.
+The document should not be used as the sole evidence for:
 
----
+- project-level financial feasibility;
+- detailed solar-resource assessment;
+- grid-connection feasibility;
+- exact project costs;
+- current electricity tariffs;
+- current regulatory procedures;
+- current procurement opportunities;
+- project-specific technical design.
 
-## Evidence Limitation
+For such questions, SolarGrid AI should retrieve more specific and recent evidence where available.
 
-The National Electricity Policy provides national policy direction.
+## Evidence Limitations
 
-It does not establish project-specific:
+This document represents national policy direction as of 3 February 2021.
 
-- grid connection approval;
-- available network capacity;
-- electricity generation;
-- CAPEX or OPEX;
-- financial returns;
-- land requirements; or
-- technical feasibility.
+Policy documents may be supplemented, amended, or followed by later regulations, policies, plans, rules, notifications, and implementation mechanisms.
 
-Project-specific conclusions require additional technical, regulatory, financial, and site-specific evidence.
+Therefore, information from this document should be presented as policy context from the stated publication date and should not automatically be interpreted as the current regulatory or implementation position.
 
----
+Where newer official evidence is available, SolarGrid AI should prioritize the more recent source for questions concerning current rules, procedures, targets, tariffs, or implementation.
 
 ## Citation
 
-Ministry of Energy (Power Division), Government of Pakistan, National Electricity Policy 2021, dated 3 February 2021.
-
-Official source:
-https://www.power.gov.pk/SiteImage/Policy/1-NationalElectricityPolicy2021.pdf
+**Source:** Government of Pakistan, Ministry of Energy (Power Division), *National Electricity Policy 2021*, 3 February 2021.
