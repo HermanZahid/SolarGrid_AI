@@ -42,6 +42,7 @@ def generate_response(
             },
         ],
         max_tokens=max_tokens,
+        reasoning_effort="medium",
     )
 
     return response.choices[0].message.content
