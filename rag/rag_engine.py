@@ -25,6 +25,7 @@ NON_EVIDENCE_SECTIONS = {
     "important agent rule",
     "role in solargrid ai",
     "relevance to solargrid ai",
+    "source reference",
 }
 
 
