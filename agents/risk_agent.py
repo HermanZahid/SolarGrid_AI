@@ -8,29 +8,18 @@ from agents.llm import generate_response
 SYSTEM_PROMPT = """
 You are the Risk Analyst Agent of SolarGrid AI.
 
-Your task is to identify and structure risks for a preliminary
-renewable-energy project assessment in Pakistan.
+Identify important potential risks in a preliminary
+renewable-energy project assessment.
 
-You receive outputs from other SolarGrid AI agents.
+RULES:
+- Do not invent facts.
+- Do not invent probabilities.
+- Do not invent monetary impacts.
+- Do not claim project failure.
+- Treat missing information as an issue requiring investigation.
+- Preserve uncertainty from the specialist agents.
 
-IMPORTANT RULES
-
-1. Do not invent facts.
-2. Do not invent regulatory requirements.
-3. Do not claim that a risk has definitely occurred.
-4. Distinguish between:
-   - Confirmed information
-   - Potential risk
-   - Missing information
-5. Do not assign financial losses or probabilities unless
-   they are explicitly supplied.
-6. Do not claim project approval, feasibility or bankability.
-7. Use conservative professional language.
-8. A missing data item should be treated as a risk requiring
-   investigation, not as proof of project failure.
-
-Classify risks under:
-
+Classify risks as:
 - Regulatory
 - Grid
 - Technical
@@ -38,32 +27,37 @@ Classify risks under:
 - Development / Execution
 - Data / Information
 
-Use exactly these sections:
+Use exactly:
 
 ### Risk Overview
 
 ### Key Risks
 
-For each important risk provide:
-- Risk
-- Category
-- Why it matters
-- Current evidence
-- What needs to be investigated
-
 ### Risk Priorities
-
-Separate issues requiring:
-- Immediate investigation
-- Further investigation
-- Routine monitoring
 
 ### Missing Information
 
 ### Bottom Line
-
-Do not invent risk probabilities or monetary impacts.
 """
+
+
+def _compact(text, max_chars=1600):
+    """
+    Reduce upstream agent text before sending it to the
+    Risk Analyst to stay within free-tier token limits.
+    """
+    if not text:
+        return "No output available."
+
+    text = str(text).strip()
+
+    if len(text) <= max_chars:
+        return text
+
+    return (
+        text[:max_chars].rsplit(" ", 1)[0]
+        + "\n[Further details omitted.]"
+    )
 
 
 def analyze_project_risks(
@@ -74,11 +68,7 @@ def analyze_project_risks(
     financial_output=None,
 ):
     """
-    Analyze project risks using outputs from the existing agents.
-
-    The Risk Agent does not perform new engineering or financial
-    calculations. It synthesizes information and identifies
-    potential risk areas.
+    Analyze risks using compact specialist-agent summaries.
     """
 
     technical_output = technical_output or {}
@@ -91,115 +81,96 @@ def analyze_project_risks(
         {},
     )
 
-    technical_answer = technical_output.get(
-        "answer",
-        "",
-    )
-
-    grid_answer = grid_output.get(
-        "answer",
-        "",
-    )
-
-    regulatory_answer = regulatory_output.get(
-        "answer",
-        "",
-    )
-
     financial_results = financial_output.get(
         "results",
         {},
     )
 
-    financial_answer = financial_output.get(
-        "answer",
-        "",
-    )
-
-    project_name = project.get(
-        "project_name",
-        "Unnamed Project",
-    )
-
     prompt = f"""
 PROJECT
 
-Name: {project_name}
+Name: {project.get("project_name", "Unnamed Project")}
 Location: {project.get("location", "Not specified")}
 Technology: {project.get("technology", "Not specified")}
 Capacity: {project.get("capacity", "Not specified")} MW
-Grid voltage input: {project.get("grid_voltage", "Not specified")}
+Grid input: {project.get("grid_voltage", "Not specified")}
 
-============================================================
-TECHNICAL AGENT OUTPUT
-============================================================
+==================================================
+TECHNICAL
+==================================================
 
-{technical_answer}
-
-TECHNICAL CALCULATIONS
-
+Calculated results:
 {technical_results}
 
-============================================================
-GRID AGENT OUTPUT
-============================================================
+Assessment:
+{_compact(
+    technical_output.get("answer", ""),
+    1200,
+)}
 
-{grid_answer}
+==================================================
+GRID
+==================================================
 
-============================================================
-REGULATORY AGENT OUTPUT
-============================================================
+{_compact(
+    grid_output.get("answer", ""),
+    1400,
+)}
 
-{regulatory_answer}
+==================================================
+REGULATORY
+==================================================
 
-============================================================
-FINANCIAL AGENT OUTPUT
-============================================================
+{_compact(
+    regulatory_output.get("answer", ""),
+    1500,
+)}
 
-{financial_answer}
+==================================================
+FINANCIAL
+==================================================
 
-FINANCIAL CALCULATIONS
-
+Calculated results:
 {financial_results}
 
-============================================================
+Assessment:
+{_compact(
+    financial_output.get("answer", ""),
+    1200,
+)}
+
+==================================================
 TASK
-============================================================
+==================================================
 
-Identify the main potential risks revealed by the available
-agent outputs.
+Identify the main potential project risks.
 
-Do not create new facts.
-
-Pay particular attention to:
-
-- regulatory applicability;
+Focus on:
+- regulatory uncertainty;
 - grid-connection uncertainty;
 - technical assumptions;
 - energy-yield assumptions;
-- tariff and CAPEX assumptions;
-- missing project data;
-- development and execution dependencies.
+- tariff assumptions;
+- CAPEX assumptions;
+- missing project information;
+- execution dependencies.
 
-Do not assign probabilities.
-
-Do not state that a project will fail.
+Do not invent probabilities or financial losses.
 
 Present risks as issues requiring investigation or management.
 """
 
     try:
-
         answer = generate_response(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=prompt,
-            max_tokens=1800,
+            max_tokens=700,
         )
 
     except Exception as exc:
-
         answer = (
-            "The Risk Analyst could not complete the assessment.\n\n"
+            "The Risk Analyst could not complete "
+            "the assessment.\n\n"
             f"Technical error: {exc}"
         )
 
@@ -216,7 +187,7 @@ def get_agent_info():
         "model": "openai/gpt-oss-120b",
         "status": "ready",
         "description": (
-            "Identifies and structures technical, grid, "
-            "regulatory, financial and execution risks."
+            "Identifies technical, grid, regulatory, "
+            "financial and execution risks."
         ),
     }
