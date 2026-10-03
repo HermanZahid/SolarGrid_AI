@@ -11,8 +11,25 @@ KNOWLEDGE_BASE = ROOT / "data" / "knowledge_base"
 SOURCES_FILE = ROOT / "data" / "sources.json"
 
 
+# These sections contain SolarGrid AI guidance rather than
+# source-derived evidence. They are excluded from retrieval
+# so the LLM does not mistake application instructions for
+# regulatory requirements.
+NON_EVIDENCE_SECTIONS = {
+    "evidence classification",
+    "regulatory significance for solargrid ai",
+    "project-specific interpretation for solargrid ai",
+    "relationship with other regulatory sources",
+    "limitations",
+    "project classification rule",
+    "important agent rule",
+    "role in solargrid ai",
+    "relevance to solargrid ai",
+}
+
+
 def load_sources():
-    """Load registered source metadata."""
+    """Load the optional source registry."""
     if not SOURCES_FILE.exists():
         return []
 
@@ -25,73 +42,117 @@ def load_sources():
 
 
 def clean_text(text):
-    """Normalize whitespace and remove Markdown artifacts."""
+    """Normalize Markdown/text for retrieval and display."""
     text = text or ""
-
-    # Remove Markdown heading markers.
     text = re.sub(r"#{1,6}\s*", "", text)
-
-    # Remove Markdown emphasis markers while keeping the words.
     text = text.replace("**", "")
     text = text.replace("__", "")
-
-    # Normalize whitespace.
     text = re.sub(r"\s+", " ", text)
-
     return text.strip()
 
 
-def parse_markdown_metadata(text):
-    """Extract metadata from the Source Metadata section."""
-
-    metadata = {}
-
-    patterns = {
-        "authority": r"\*\*Authority:\*\*\s*(.+)",
-        "title": r"\*\*Document:\*\*\s*(.+)",
-        "date": r"\*\*Date:\*\*\s*(.+)",
-        "category": r"\*\*Category:\*\*\s*(.+)",
-        "status": r"\*\*Status:\*\*\s*(.+)",
-        "url": r"\*\*Official Source:\*\*\s*(.+)",
-    }
-
-    for key, pattern in patterns.items():
-        match = re.search(pattern, text)
-
+def _first_metadata_value(text, patterns):
+    """
+    Return the first metadata value matching any supplied pattern.
+    """
+    for pattern in patterns:
+        match = re.search(
+            pattern,
+            text,
+            flags=re.IGNORECASE,
+        )
         if match:
-            metadata[key] = match.group(1).strip()
+            return match.group(1).strip()
 
-    return metadata
+    return ""
+
+
+def parse_markdown_metadata(text):
+    """
+    Extract metadata while supporting both current metadata formats.
+
+    Supported variants include:
+
+        **Authority:** ...
+        **Issuing authority:** ...
+
+        **Document:** ...
+        **Source document:** ...
+
+        **Official Source:** ...
+        **Source:** ...
+    """
+    return {
+        "authority": _first_metadata_value(
+            text,
+            [
+                r"\*\*Authority:\*\*\s*(.+)",
+                r"\*\*Issuing authority:\*\*\s*(.+)",
+            ],
+        ),
+        "title": _first_metadata_value(
+            text,
+            [
+                r"\*\*Document:\*\*\s*(.+)",
+                r"\*\*Source document:\*\*\s*(.+)",
+            ],
+        ),
+        "date": _first_metadata_value(
+            text,
+            [
+                r"\*\*Date:\*\*\s*(.+)",
+            ],
+        ),
+        "category": _first_metadata_value(
+            text,
+            [
+                r"\*\*Category:\*\*\s*(.+)",
+                r"\*\*Document type:\*\*\s*(.+)",
+            ],
+        ),
+        "status": _first_metadata_value(
+            text,
+            [
+                r"\*\*Status:\*\*\s*(.+)",
+            ],
+        ),
+        "url": _first_metadata_value(
+            text,
+            [
+                r"\*\*Official Source:\*\*\s*(.+)",
+                r"\*\*Source:\*\*\s*(.+)",
+            ],
+        ),
+    }
 
 
 def remove_metadata_block(text):
     """
-    Remove the metadata section from searchable content.
-
-    Metadata is displayed with each result but should not
-    dominate retrieval scores.
+    Remove either 'Source Metadata' or legacy 'Metadata'
+    sections before creating searchable content.
     """
-
     match = re.search(
-        r"## Source Metadata(.*?)(?=\n---|\n## |\Z)",
+        r"(?ms)^##\s+(?:Source Metadata|Metadata)\s*$.*?"
+        r"(?=^---\s*$|^##\s+|\Z)",
         text,
-        flags=re.DOTALL,
     )
 
     if match:
-        text = text[:match.start()] + text[match.end():]
+        text = (
+            text[:match.start()]
+            + text[match.end():]
+        )
 
     return text.strip()
 
 
 def split_into_sections(text):
     """
-    Split Markdown into logical sections.
+    Split a Markdown document at level-2 headings.
 
-    Very short/title-only sections are ignored because they
-    do not provide useful evidence for retrieval.
+    Very short sections are ignored because they generally contain
+    little useful retrieval content.
     """
-
     parts = re.split(
         r"\n(?=## )",
         text,
@@ -100,18 +161,20 @@ def split_into_sections(text):
     sections = []
 
     for part in parts:
-
         part = part.strip()
 
         if not part:
             continue
 
         lines = part.splitlines()
-
         heading = ""
 
         if lines and lines[0].startswith("## "):
-            heading = lines[0].replace("## ", "").strip()
+            heading = (
+                lines[0]
+                .replace("## ", "")
+                .strip()
+            )
 
         body = (
             "\n".join(lines[1:]).strip()
@@ -121,7 +184,6 @@ def split_into_sections(text):
 
         body = clean_text(body)
 
-        # Ignore title-only or extremely short chunks.
         if len(body.split()) < 12:
             continue
 
@@ -135,62 +197,68 @@ def split_into_sections(text):
     return sections
 
 
+def is_evidence_section(section_name):
+    """
+    Return True when the section is suitable for evidence retrieval.
+
+    SolarGrid AI guidance sections are excluded so that they cannot
+    be mistaken for direct regulatory/source requirements.
+    """
+    normalized = clean_text(section_name).lower()
+    return normalized not in NON_EVIDENCE_SECTIONS
+
+
 def read_markdown(path):
-    """Read a Markdown knowledge-base file."""
-    return path.read_text(
-        encoding="utf-8"
-    )
+    """Read a Markdown/text knowledge-base file."""
+    return path.read_text(encoding="utf-8")
 
 
 class LocalRAG:
-    """
-    Lightweight local RAG engine.
-
-    Retrieval method:
-        TF-IDF + cosine-style similarity
-
-    This implementation is intentionally:
-        - free
-        - lightweight
-        - deterministic
-        - suitable for Streamlit Community Cloud
-    """
-
     def __init__(self):
-
         self.documents = []
-
         self._load_knowledge_base()
 
-        texts = [
-            document["text"]
+        # Internal retrieval text includes the document title,
+        # section heading, and evidence text.
+        search_texts = [
+            document["search_text"]
             for document in self.documents
         ]
 
+        # Do NOT remove English stop words.
+        #
+        # In regulatory text, words such as:
+        #   must
+        #   shall
+        #   may
+        #   not
+        #
+        # can materially change the meaning of a requirement.
         self.vectorizer = TfidfVectorizer(
-            stop_words="english",
+            stop_words=None,
             ngram_range=(1, 2),
             max_features=60000,
             sublinear_tf=True,
         )
 
-        if texts:
-            self.matrix = (
-                self.vectorizer.fit_transform(texts)
-            )
-        else:
-            self.matrix = None
+        self.matrix = (
+            self.vectorizer.fit_transform(search_texts)
+            if search_texts
+            else None
+        )
 
     def _load_knowledge_base(self):
-        """Discover and index Markdown/text knowledge-base files."""
+        """
+        Load .md and .txt files from the local knowledge base.
 
+        Each retained section becomes one retrievable evidence item.
+        """
         if not KNOWLEDGE_BASE.exists():
             return
 
         for path in sorted(
             KNOWLEDGE_BASE.rglob("*")
         ):
-
             if not path.is_file():
                 continue
 
@@ -202,7 +270,6 @@ class LocalRAG:
 
             try:
                 raw_text = read_markdown(path)
-
             except OSError:
                 continue
 
@@ -213,10 +280,8 @@ class LocalRAG:
                 raw_text
             )
 
-            searchable_text = (
-                remove_metadata_block(
-                    raw_text
-                )
+            searchable_text = remove_metadata_block(
+                raw_text
             )
 
             sections = split_into_sections(
@@ -226,44 +291,64 @@ class LocalRAG:
             for idx, section in enumerate(
                 sections
             ):
+                # Exclude SolarGrid AI guidance sections from
+                # the evidence retrieval layer.
+                if not is_evidence_section(
+                    section["section"]
+                ):
+                    continue
 
-                document = {
-                    "source_file": str(
-                        path.relative_to(ROOT)
-                    ),
-                    "chunk_id": idx,
-                    "section": section[
-                        "section"
-                    ],
-                    "text": section["text"],
-                    "title": metadata.get(
-                        "title",
-                        path.stem,
-                    ),
-                    "authority": metadata.get(
-                        "authority",
-                        "",
-                    ),
-                    "category": metadata.get(
-                        "category",
-                        "",
-                    ),
-                    "status": metadata.get(
-                        "status",
-                        "",
-                    ),
-                    "date": metadata.get(
-                        "date",
-                        "",
-                    ),
-                    "url": metadata.get(
-                        "url",
-                        "",
-                    ),
-                }
+                title = metadata.get(
+                    "title",
+                    "",
+                ).strip()
+
+                if not title:
+                    title = path.stem
+
+                # Internal retrieval representation.
+                # This is used for better matching but is not
+                # exposed as evidence to the UI/LLM.
+                search_text = clean_text(
+                    f"{title} "
+                    f"{section['section']} "
+                    f"{section['text']}"
+                )
 
                 self.documents.append(
-                    document
+                    {
+                        "source_file": str(
+                            path.relative_to(ROOT)
+                        ),
+                        "chunk_id": idx,
+                        "section": section["section"],
+                        "text": section["text"],
+                        "title": title,
+                        "authority": metadata.get(
+                            "authority",
+                            "",
+                        ),
+                        "category": metadata.get(
+                            "category",
+                            "",
+                        ),
+                        "status": metadata.get(
+                            "status",
+                            "",
+                        ),
+                        "date": metadata.get(
+                            "date",
+                            "",
+                        ),
+                        "url": metadata.get(
+                            "url",
+                            "",
+                        ),
+                        "evidence_type": (
+                            "curated source summary"
+                        ),
+                        "search_text": search_text,
+                    }
                 )
 
     def search(
@@ -274,23 +359,18 @@ class LocalRAG:
         category=None,
     ):
         """
-        Retrieve the most relevant evidence.
-
-        Optional filters:
-            authority
-            category
+        Retrieve the top-k evidence passages using
+        TF-IDF cosine similarity.
         """
-
         if (
             self.matrix is None
+            or not query
             or not query.strip()
         ):
             return []
 
-        query_vector = (
-            self.vectorizer.transform(
-                [query]
-            )
+        query_vector = self.vectorizer.transform(
+            [query]
         )
 
         scores = (
@@ -304,7 +384,6 @@ class LocalRAG:
         results = []
 
         for index in candidate_indices:
-
             score = float(
                 scores[index]
             )
@@ -312,29 +391,29 @@ class LocalRAG:
             if score <= 0:
                 continue
 
-            document = self.documents[
-                index
-            ]
+            document = self.documents[index]
 
-            if authority:
-                if (
-                    authority.lower()
-                    not in document[
-                        "authority"
-                    ].lower()
-                ):
-                    continue
+            if (
+                authority
+                and authority.lower()
+                not in document["authority"].lower()
+            ):
+                continue
 
-            if category:
-                if (
-                    category.lower()
-                    not in document[
-                        "category"
-                    ].lower()
-                ):
-                    continue
+            if (
+                category
+                and category.lower()
+                not in document["category"].lower()
+            ):
+                continue
 
+            # Copy the document so the internal search_text
+            # does not leak into the returned result.
             result = dict(document)
+            result.pop(
+                "search_text",
+                None,
+            )
 
             result["score"] = round(
                 score,
@@ -354,13 +433,9 @@ class LocalRAG:
         k=5,
     ):
         """
-        Retrieve evidence formatted for an LLM prompt.
-
-        Returns:
-            context_text
-            retrieval_results
+        Return LLM-ready evidence context plus the underlying
+        evidence records.
         """
-
         results = self.search(
             query,
             k=k,
@@ -375,7 +450,6 @@ class LocalRAG:
             results,
             start=1,
         ):
-
             context_blocks.append(
                 f"""
 [S{i}]
@@ -383,6 +457,7 @@ Title: {item['title']}
 Authority: {item['authority']}
 Date: {item['date']}
 Section: {item['section']}
+Evidence type: {item['evidence_type']}
 Official Source: {item['url']}
 
 Evidence:
@@ -391,15 +466,12 @@ Evidence:
             )
 
         return (
-            "\n\n".join(
-                context_blocks
-            ),
+            "\n\n".join(context_blocks),
             results,
         )
 
     def status(self):
-        """Return knowledge-base diagnostics."""
-
+        """Return basic knowledge-base diagnostics."""
         sources = {
             document["title"]
             for document in self.documents
