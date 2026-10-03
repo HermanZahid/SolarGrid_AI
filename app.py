@@ -1,40 +1,15 @@
 import streamlit as st
 
 from rag.rag_engine import LocalRAG
+from agents.regulatory_agent import (
+    retrieve_regulatory_evidence,
+    generate_regulatory_assessment,
+)
 
 
-# ---------------------------------------------------------
-# Regulatory Agent imports
-# ---------------------------------------------------------
-#
-# The new Regulatory Agent exposes two separate stages:
-#
-#   1. retrieve_regulatory_evidence()
-#   2. generate_regulatory_assessment()
-#
-# A fallback is kept so the application remains compatible
-# with an older deployed version of regulatory_agent.py.
-# ---------------------------------------------------------
-
-try:
-    from agents.regulatory_agent import (
-        retrieve_regulatory_evidence,
-        generate_regulatory_assessment,
-    )
-
-    NEW_REGULATORY_AGENT = True
-
-except ImportError:
-    from agents.regulatory_agent import (
-        analyze_regulatory_question,
-    )
-
-    NEW_REGULATORY_AGENT = False
-
-
-# ---------------------------------------------------------
-# Page configuration
-# ---------------------------------------------------------
+# =========================================================
+# PAGE CONFIGURATION
+# =========================================================
 
 st.set_page_config(
     page_title="SolarGrid AI",
@@ -44,14 +19,13 @@ st.set_page_config(
 )
 
 
-# ---------------------------------------------------------
-# Custom styling
-# ---------------------------------------------------------
+# =========================================================
+# STYLING
+# =========================================================
 
 st.markdown(
     """
     <style>
-
     .block-container {
         max-width: 1400px;
         padding-top: 1.5rem;
@@ -67,43 +41,15 @@ st.markdown(
     [data-testid="stMetricLabel"] {
         font-size: 0.85rem;
     }
-
-    .workflow-card {
-        padding: 14px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        border-radius: 14px;
-        min-height: 125px;
-        margin-bottom: 8px;
-    }
-
-    .workflow-icon {
-        font-size: 1.7rem;
-    }
-
-    .workflow-name {
-        font-weight: 700;
-        margin-top: 6px;
-    }
-
-    .workflow-status {
-        font-size: 0.8rem;
-        margin-top: 8px;
-    }
-
-    .section-note {
-        font-size: 0.88rem;
-        opacity: 0.75;
-    }
-
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 
-# ---------------------------------------------------------
-# Load RAG
-# ---------------------------------------------------------
+# =========================================================
+# LOAD RAG
+# =========================================================
 
 @st.cache_resource
 def load_rag():
@@ -113,9 +59,9 @@ def load_rag():
 rag = load_rag()
 
 
-# ---------------------------------------------------------
-# Session state
-# ---------------------------------------------------------
+# =========================================================
+# SESSION STATE
+# =========================================================
 
 if "regulatory_result" not in st.session_state:
     st.session_state.regulatory_result = None
@@ -127,24 +73,22 @@ if "regulatory_stage" not in st.session_state:
     st.session_state.regulatory_stage = "Ready"
 
 
-# ---------------------------------------------------------
-# Helper functions
-# ---------------------------------------------------------
+# =========================================================
+# HELPER FUNCTIONS
+# =========================================================
 
 def check_groq_configuration():
-    """
-    Check whether GROQ_API_KEY exists in Streamlit Secrets.
-    """
+    """Return True when the Groq API key is configured."""
     try:
-        return bool(st.secrets.get("GROQ_API_KEY"))
+        return bool(
+            st.secrets.get("GROQ_API_KEY")
+        )
     except Exception:
         return False
 
 
 def get_project():
-    """
-    Return the project inputs currently entered in the sidebar.
-    """
+    """Collect current project inputs."""
     return {
         "project_name": st.session_state.get(
             "project_name",
@@ -173,14 +117,12 @@ def render_evidence(
     evidence,
     expanded_first=True,
 ):
-    """
-    Display retrieved evidence consistently across the application.
-    """
+    """Render retrieved evidence passages."""
 
     if not evidence:
         st.warning(
-            "No evidence was retrieved from the current "
-            "knowledge base."
+            "No evidence was retrieved from the "
+            "current knowledge base."
         )
         return
 
@@ -230,26 +172,27 @@ def render_evidence(
             ),
         ):
 
-            metadata_parts = []
+            metadata = []
 
             if authority:
-                metadata_parts.append(
+                metadata.append(
                     authority
                 )
 
             if date:
-                metadata_parts.append(
+                metadata.append(
                     date
                 )
 
             if score != "":
-                metadata_parts.append(
+                metadata.append(
                     f"Relevance: {score}"
                 )
 
-            st.caption(
-                " | ".join(metadata_parts)
-            )
+            if metadata:
+                st.caption(
+                    " | ".join(metadata)
+                )
 
             st.caption(
                 f"Evidence type: {evidence_type}"
@@ -269,18 +212,17 @@ def render_evidence(
                 )
 
 
-def reset_regulatory_result():
-    """
-    Clear the previous Regulatory Agent result.
-    """
+def clear_regulatory_result():
+    """Clear the previous Regulatory Agent result."""
+
     st.session_state.regulatory_result = None
     st.session_state.regulatory_evidence = []
     st.session_state.regulatory_stage = "Ready"
 
 
-# ---------------------------------------------------------
-# Sidebar
-# ---------------------------------------------------------
+# =========================================================
+# SIDEBAR
+# =========================================================
 
 with st.sidebar:
 
@@ -295,19 +237,19 @@ with st.sidebar:
 
     st.subheader("Project")
 
-    project_name = st.text_input(
+    st.text_input(
         "Project name",
         "Demo Solar PV Project",
         key="project_name",
     )
 
-    location = st.text_input(
+    st.text_input(
         "Location",
         "Pakistan",
         key="location",
     )
 
-    technology = st.selectbox(
+    st.selectbox(
         "Technology",
         [
             "Solar PV",
@@ -319,7 +261,7 @@ with st.sidebar:
         key="technology",
     )
 
-    capacity = st.number_input(
+    st.number_input(
         "Capacity (MW)",
         min_value=0.1,
         value=50.0,
@@ -327,7 +269,7 @@ with st.sidebar:
         key="capacity",
     )
 
-    grid_voltage = st.selectbox(
+    st.selectbox(
         "Grid connection voltage",
         [
             "11 kV",
@@ -382,9 +324,9 @@ with st.sidebar:
     )
 
 
-# ---------------------------------------------------------
-# Main Header
-# ---------------------------------------------------------
+# =========================================================
+# MAIN HEADER
+# =========================================================
 
 st.title("☀️ SolarGrid AI")
 
@@ -396,9 +338,9 @@ st.caption(
 st.divider()
 
 
-# ---------------------------------------------------------
-# Project Command Center
-# ---------------------------------------------------------
+# =========================================================
+# PROJECT COMMAND CENTER
+# =========================================================
 
 st.header("Project Command Center")
 
@@ -407,31 +349,31 @@ c1, c2, c3, c4 = st.columns(4)
 with c1:
     st.metric(
         "Project",
-        project_name,
+        st.session_state.project_name,
     )
 
 with c2:
     st.metric(
         "Technology",
-        technology,
+        st.session_state.technology,
     )
 
 with c3:
     st.metric(
         "Capacity",
-        f"{capacity:g} MW",
+        f"{st.session_state.capacity:g} MW",
     )
 
 with c4:
     st.metric(
         "Grid Connection",
-        grid_voltage,
+        st.session_state.grid_voltage,
     )
 
 
-# ---------------------------------------------------------
-# AI Workflow
-# ---------------------------------------------------------
+# =========================================================
+# AI WORKFLOW
+# =========================================================
 
 st.header("AI Workflow")
 
@@ -478,47 +420,31 @@ workflow = [
     ),
 ]
 
-
-workflow_cols = st.columns(
+workflow_columns = st.columns(
     len(workflow)
 )
 
-for col, (
+for column, (
     icon,
     name,
     agent_status,
 ) in zip(
-    workflow_cols,
+    workflow_columns,
     workflow,
 ):
 
-    with col:
+    with column:
 
-        st.markdown(
-            f"""
-            <div class="workflow-card">
-
-                <div class="workflow-icon">
-                    {icon}
-                </div>
-
-                <div class="workflow-name">
-                    {name}
-                </div>
-
-                <div class="workflow-status">
-                    {agent_status}
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True,
+        st.info(
+            f"{icon}\n\n"
+            f"**{name}**\n\n"
+            f"_{agent_status}_"
         )
 
 
-# ---------------------------------------------------------
-# Tabs
-# ---------------------------------------------------------
+# =========================================================
+# TABS
+# =========================================================
 
 tab1, tab2, tab3, tab4 = st.tabs(
     [
@@ -531,7 +457,7 @@ tab1, tab2, tab3, tab4 = st.tabs(
 
 
 # =========================================================
-# TAB 1 — Evidence Center
+# TAB 1 — EVIDENCE CENTER
 # =========================================================
 
 with tab1:
@@ -541,17 +467,16 @@ with tab1:
     )
 
     st.caption(
-        "Retrieve source-grounded evidence from the "
-        "SolarGrid AI knowledge base before asking "
-        "the LLM to interpret it."
+        "Retrieve source-grounded evidence from "
+        "the SolarGrid AI knowledge base."
     )
 
     query = st.text_input(
         "Ask a regulatory or energy-sector question",
         placeholder=(
             "Example: What are the requirements "
-            "for connecting a generation facility to "
-            "the grid?"
+            "for connecting a generation facility "
+            "to the grid?"
         ),
         key="evidence_query",
     )
@@ -600,7 +525,7 @@ with tab1:
 
 
 # =========================================================
-# TAB 2 — Regulatory AI
+# TAB 2 — REGULATORY AI
 # =========================================================
 
 with tab2:
@@ -610,9 +535,8 @@ with tab2:
     )
 
     st.caption(
-        "GPT-OSS 120B analyzes retrieved "
-        "Pakistan-specific regulatory evidence "
-        "and cites the evidence used."
+        "GPT-OSS 120B analyzes retrieved Pakistan-specific "
+        "regulatory evidence and cites the evidence used."
     )
 
     question = st.text_area(
@@ -635,34 +559,34 @@ with tab2:
     with p1:
         st.metric(
             "Technology",
-            technology,
+            st.session_state.technology,
         )
 
     with p2:
         st.metric(
             "Capacity",
-            f"{capacity:g} MW",
+            f"{st.session_state.capacity:g} MW",
         )
 
     with p3:
         st.metric(
             "Voltage",
-            grid_voltage,
+            st.session_state.grid_voltage,
         )
 
     with p4:
         st.metric(
             "Location",
-            location,
+            st.session_state.location,
         )
 
     st.divider()
 
-    run_col, reset_col = st.columns(
+    b1, b2 = st.columns(
         [3, 1]
     )
 
-    with run_col:
+    with b1:
 
         run_agent = st.button(
             "🚀 Run Regulatory Intelligence Agent",
@@ -670,26 +594,21 @@ with tab2:
             key="run_regulatory_agent",
         )
 
-    with reset_col:
+    with b2:
 
-        reset_agent = st.button(
+        clear_result = st.button(
             "↻ Clear Result",
-            key="reset_regulatory_agent",
+            key="clear_regulatory_result",
         )
 
+    if clear_result:
 
-    if reset_agent:
-
-        reset_regulatory_result()
+        clear_regulatory_result()
 
         st.rerun()
 
 
     if run_agent:
-
-        # -------------------------------------------------
-        # Validation
-        # -------------------------------------------------
 
         if not question.strip():
 
@@ -709,70 +628,52 @@ with tab2:
 
             project = get_project()
 
-            # -------------------------------------------------
-            # Clear old result
-            # -------------------------------------------------
-
+            # Clear previous result
             st.session_state.regulatory_result = None
             st.session_state.regulatory_evidence = []
+            st.session_state.regulatory_stage = (
+                "Running"
+            )
 
-            # -------------------------------------------------
-            # New actual execution flow
-            # -------------------------------------------------
+            # =================================================
+            # REAL AGENT EXECUTION
+            # =================================================
 
             with st.status(
-                "Running SolarGrid AI Regulatory Agent...",
+                "Running Regulatory Intelligence Agent...",
                 expanded=True,
-            ) as agent_status:
+            ) as workflow_status:
 
-                # =============================================
-                # Stage 1 — Retrieval
-                # =============================================
+                # ---------------------------------------------
+                # STAGE 1 — RETRIEVAL
+                # ---------------------------------------------
 
                 st.session_state.regulatory_stage = (
                     "Retrieving evidence"
                 )
 
                 st.write(
-                    "🔎 **Stage 1/3 — Retrieving "
-                    "Pakistan regulatory evidence...**"
+                    "🔎 **Stage 1/3 — "
+                    "Retrieving regulatory evidence...**"
                 )
 
-                if NEW_REGULATORY_AGENT:
-
-                    retrieval = (
-                        retrieve_regulatory_evidence(
-                            query=question,
-                            rag=rag,
-                            k=5,
-                        )
+                retrieval = (
+                    retrieve_regulatory_evidence(
+                        query=question,
+                        rag=rag,
+                        k=5,
                     )
+                )
 
-                    evidence = retrieval.get(
-                        "evidence",
-                        [],
-                    )
+                evidence = retrieval.get(
+                    "evidence",
+                    [],
+                )
 
-                    context = retrieval.get(
-                        "context",
-                        "",
-                    )
-
-                else:
-
-                    # Backward-compatible fallback.
-                    #
-                    # The older agent combines retrieval and
-                    # generation, so we retrieve separately here
-                    # for the visible UI and then use the legacy
-                    # function only if necessary.
-
-                    context, evidence = (
-                        rag.get_context(
-                            question,
-                            k=5,
-                        )
-                    )
+                context = retrieval.get(
+                    "context",
+                    "",
+                )
 
                 st.session_state.regulatory_evidence = (
                     evidence
@@ -784,14 +685,9 @@ with tab2:
                         "No evidence"
                     )
 
-                    st.warning(
-                        "No relevant evidence was found "
-                        "in the current knowledge base."
-                    )
-
-                    agent_status.update(
+                    workflow_status.update(
                         label=(
-                            "Regulatory Agent stopped: "
+                            "Regulatory workflow stopped: "
                             "no evidence found"
                         ),
                         state="error",
@@ -804,92 +700,70 @@ with tab2:
                         "evidence passages."
                     )
 
-                    # =============================================
-                    # Stage 2 — LLM Analysis
-                    # =============================================
+                    # -----------------------------------------
+                    # STAGE 2 — LLM ANALYSIS
+                    # -----------------------------------------
 
                     st.session_state.regulatory_stage = (
                         "Analyzing evidence"
                     )
 
                     st.write(
-                        "🧠 **Stage 2/3 — Sending evidence "
-                        "to GPT-OSS 120B...**"
+                        "🧠 **Stage 2/3 — "
+                        "GPT-OSS 120B analyzing evidence...**"
                     )
 
-                    if NEW_REGULATORY_AGENT:
-
-                        answer = (
-                            generate_regulatory_assessment(
-                                query=question,
-                                project=project,
-                                context=context,
-                                evidence=evidence,
-                                max_tokens=1800,
-                            )
+                    answer = (
+                        generate_regulatory_assessment(
+                            query=question,
+                            project=project,
+                            context=context,
+                            evidence=evidence,
+                            max_tokens=1800,
                         )
-
-                    else:
-
-                        # Legacy fallback.
-                        legacy_result = (
-                            analyze_regulatory_question(
-                                query=question,
-                                rag=rag,
-                                project=project,
-                            )
-                        )
-
-                        answer = legacy_result.get(
-                            "answer",
-                            "",
-                        )
+                    )
 
                     st.write(
-                        "✅ GPT-OSS 120B completed the "
-                        "evidence analysis."
+                        "✅ Evidence analysis completed."
                     )
 
-                    # =============================================
-                    # Stage 3 — Finalization
-                    # =============================================
+                    # -----------------------------------------
+                    # STAGE 3 — FINALIZATION
+                    # -----------------------------------------
 
                     st.session_state.regulatory_stage = (
                         "Completed"
                     )
 
                     st.write(
-                        "📝 **Stage 3/3 — Preparing "
-                        "evidence-backed assessment...**"
-                    )
-
-                    st.write(
-                        "✅ Regulatory assessment ready."
-                    )
-
-                    agent_status.update(
-                        label=(
-                            "Regulatory Intelligence Agent "
-                            "completed"
-                        ),
-                        state="complete",
+                        "📝 **Stage 3/3 — "
+                        "Preparing final assessment...**"
                     )
 
                     st.session_state.regulatory_result = (
                         answer
                     )
 
+                    st.write(
+                        "✅ Final assessment prepared."
+                    )
 
-            # -------------------------------------------------
-            # Final result
-            # -------------------------------------------------
+                    # Important:
+                    # Do NOT repeat the exact phrase
+                    # "Regulatory Intelligence Agent completed."
+                    # here because we display the result below.
+                    workflow_status.update(
+                        label=(
+                            "Regulatory workflow completed"
+                        ),
+                        state="complete",
+                    )
+
+            # =================================================
+            # RESULT
+            # =================================================
 
             if st.session_state.regulatory_result:
-
-                st.success(
-                    "Regulatory Intelligence Agent "
-                    "completed."
-                )
 
                 st.markdown(
                     "## Regulatory Assessment"
@@ -898,10 +772,6 @@ with tab2:
                 st.markdown(
                     st.session_state.regulatory_result
                 )
-
-                # -------------------------------------------------
-                # Evidence used
-                # -------------------------------------------------
 
                 st.divider()
 
@@ -914,16 +784,9 @@ with tab2:
                 )
 
 
-    # ---------------------------------------------------------
-    # Show previous result after Streamlit reruns
-    # ---------------------------------------------------------
-
     elif st.session_state.regulatory_result:
 
-        st.success(
-            "Regulatory Intelligence Agent "
-            "completed."
-        )
+        # Display previous result after Streamlit reruns.
 
         st.markdown(
             "## Regulatory Assessment"
@@ -945,7 +808,7 @@ with tab2:
 
 
 # =========================================================
-# TAB 3 — RAG Test Lab
+# TAB 3 — RAG TEST LAB
 # =========================================================
 
 with tab3:
@@ -955,8 +818,8 @@ with tab3:
     )
 
     st.caption(
-        "Use these tests to verify evidence retrieval "
-        "before connecting additional AI agents."
+        "Verify evidence retrieval before "
+        "connecting additional AI agents."
     )
 
     test_questions = [
@@ -1005,8 +868,8 @@ with tab3:
         if not results:
 
             st.error(
-                "RAG returned no evidence for "
-                "this question."
+                "RAG returned no evidence "
+                "for this question."
             )
 
         else:
@@ -1021,7 +884,7 @@ with tab3:
 
 
 # =========================================================
-# TAB 4 — Diagnostics
+# TAB 4 — DIAGNOSTICS
 # =========================================================
 
 with tab4:
@@ -1095,13 +958,17 @@ with tab4:
                 "",
             )
 
-            st.caption(
+            label = (
                 f"{title} → {section}"
-                + (
+            )
+
+            if authority:
+                label += (
                     f" | {authority}"
-                    if authority
-                    else ""
                 )
+
+            st.caption(
+                label
             )
 
     else:
@@ -1111,19 +978,10 @@ with tab4:
         )
 
     st.markdown(
-        "### Regulatory Agent Mode"
+        "### Regulatory Agent"
     )
 
-    if NEW_REGULATORY_AGENT:
-
-        st.success(
-            "New staged Regulatory Agent detected: "
-            "Retrieval → GPT-OSS analysis → Assessment"
-        )
-
-    else:
-
-        st.warning(
-            "Legacy Regulatory Agent detected. "
-            "The app is using the compatibility fallback."
-        )
+    st.success(
+        "Staged execution enabled: "
+        "Retrieval → GPT-OSS Analysis → Assessment"
+    )
