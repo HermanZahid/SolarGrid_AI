@@ -8,31 +8,17 @@ from agents.llm import generate_response
 SYSTEM_PROMPT = """
 You are the Project Manager and Synthesis Agent of SolarGrid AI.
 
-Your job is to combine the outputs of the Technical Engineer,
-Grid Engineer, Financial Analyst, Regulatory Intelligence Agent,
-and Risk Analyst into one coherent preliminary project assessment.
+Combine specialist-agent outputs into one concise preliminary
+renewable-energy project assessment.
 
-You are NOT a decision-maker.
-
-You must not claim that a project is:
-- approved
-- feasible
-- bankable
-- financially viable
-- grid-feasible
-- legally compliant
-
-unless the supplied agent outputs explicitly establish such a fact.
-
-IMPORTANT RULES
-
-1. Preserve uncertainty.
-2. Do not invent missing information.
-3. Do not change numerical results.
-4. Distinguish calculations from assumptions.
-5. Distinguish evidence-backed findings from interpretation.
-6. Highlight unresolved issues.
-7. Treat this as a preliminary screening assessment.
+RULES:
+- Do not invent facts.
+- Do not change calculated numbers.
+- Preserve uncertainty.
+- Distinguish assumptions from evidence.
+- Do not claim feasibility, bankability, approval, compliance,
+  or grid feasibility.
+- Identify unresolved issues and missing information.
 
 Use exactly:
 
@@ -55,14 +41,30 @@ Use exactly:
 ### Preliminary Project Status
 
 For Preliminary Project Status use only:
-
 - Evidence available
 - Further investigation required
-
-Do not use a numerical score.
-Do not rank the project against other projects.
-Do not declare the project feasible or infeasible.
 """
+
+
+def _compact(text, max_chars=1800):
+    """
+    Keep only a compact portion of an upstream agent response.
+
+    The Project Manager does not need the full verbose output
+    from every specialist agent.
+    """
+    if not text:
+        return "No output available."
+
+    text = str(text).strip()
+
+    if len(text) <= max_chars:
+        return text
+
+    return (
+        text[:max_chars].rsplit(" ", 1)[0]
+        + "\n[Further specialist details omitted for token efficiency.]"
+    )
 
 
 def synthesize_project(
@@ -74,8 +76,11 @@ def synthesize_project(
     risk_output=None,
 ):
     """
-    Combine the outputs of the project agents into one
-    evidence-aware preliminary assessment.
+    Synthesize compact specialist-agent results.
+
+    Numerical calculation dictionaries are preserved, while
+    long narrative responses are shortened before being sent
+    to GPT-OSS 120B.
     """
 
     technical_output = technical_output or {}
@@ -84,94 +89,110 @@ def synthesize_project(
     financial_output = financial_output or {}
     risk_output = risk_output or {}
 
-    project_name = project.get(
-        "project_name",
-        "Unnamed Project",
+    project_summary = f"""
+Project name: {project.get("project_name", "Unnamed Project")}
+Location: {project.get("location", "Not specified")}
+Technology: {project.get("technology", "Not specified")}
+Capacity: {project.get("capacity", "Not specified")} MW
+Grid connection input: {project.get("grid_voltage", "Not specified")}
+""".strip()
+
+    technical_results = technical_output.get(
+        "results",
+        {},
+    )
+
+    financial_results = financial_output.get(
+        "results",
+        {},
     )
 
     prompt = f"""
 PROJECT
+{project_summary}
 
-Name: {project_name}
-Location: {project.get("location", "Not specified")}
-Technology: {project.get("technology", "Not specified")}
-Capacity: {project.get("capacity", "Not specified")} MW
-Grid voltage input: {project.get("grid_voltage", "Not specified")}
-
-============================================================
+==================================================
 TECHNICAL ENGINEER
-============================================================
+==================================================
 
-{technical_output.get("answer", "")}
+Calculated results:
+{technical_results}
 
-CALCULATED TECHNICAL RESULTS
+Specialist assessment:
+{_compact(
+    technical_output.get("answer", ""),
+    1200,
+)}
 
-{technical_output.get("results", {})}
-
-============================================================
+==================================================
 GRID ENGINEER
-============================================================
+==================================================
 
-{grid_output.get("answer", "")}
+{_compact(
+    grid_output.get("answer", ""),
+    1500,
+)}
 
-============================================================
+==================================================
 REGULATORY INTELLIGENCE
-============================================================
+==================================================
 
-{regulatory_output.get("answer", "")}
+{_compact(
+    regulatory_output.get("answer", ""),
+    1700,
+)}
 
-============================================================
+==================================================
 FINANCIAL ANALYST
-============================================================
+==================================================
 
-{financial_output.get("answer", "")}
+Calculated results:
+{financial_results}
 
-CALCULATED FINANCIAL RESULTS
+Specialist assessment:
+{_compact(
+    financial_output.get("answer", ""),
+    1200,
+)}
 
-{financial_output.get("results", {})}
-
-============================================================
+==================================================
 RISK ANALYST
-============================================================
+==================================================
 
-{risk_output.get("answer", "")}
+{_compact(
+    risk_output.get("answer", ""),
+    1600,
+)}
 
-============================================================
+==================================================
 TASK
-============================================================
+==================================================
 
-Prepare a concise integrated preliminary project assessment.
+Create one concise integrated preliminary project assessment.
 
-Do not introduce any new facts.
+Use only the information supplied above.
 
-Preserve the assumptions and uncertainty contained in the
-individual agent outputs.
+Preserve uncertainty and assumptions.
 
-Make it clear which findings are:
-- calculated;
-- evidence-backed;
-- assumptions;
-- unresolved.
+Do not invent new technical, financial, regulatory or grid facts.
 
-Identify the most important next investigations.
+Do not change numerical results.
 
-The final assessment is a preliminary screening output,
-not a formal feasibility study.
+Identify the most important unresolved issues and next
+investigations.
 """
 
     try:
-
         answer = generate_response(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=prompt,
-            max_tokens=2200,
+            max_tokens=700,
         )
 
     except Exception as exc:
-
         answer = (
-            "The Project Manager could not complete the "
-            "integrated assessment.\n\n"
+            "The Project Manager could not complete "
+            "the integrated assessment.\n\n"
             f"Technical error: {exc}"
         )
 
@@ -188,7 +209,7 @@ def get_agent_info():
         "model": "openai/gpt-oss-120b",
         "status": "ready",
         "description": (
-            "Synthesizes the outputs of all specialist "
-            "agents into a preliminary project assessment."
+            "Synthesizes specialist-agent outputs into "
+            "a concise preliminary project assessment."
         ),
     }
