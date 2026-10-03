@@ -2,185 +2,141 @@
 
 ## Source Metadata
 
-- **Authority:** Government of Pakistan / Ministry of Energy (Power Division)
-- **Document:** Framework Guidelines for Fast Track Solar PV Initiatives 2022
-- **Date:** 2 March 2022
-- **Category:** Solar PV Development / Energy Policy / Procurement Framework
-- **Status:** Government framework
-- **Jurisdiction:** Pakistan
-- **Official Source:** https://www.ppib.gov.pk/policies/Framework-Guidelines-_-Fast-Track-Solar-PV-Initiatives-2022.pdf
+**Authority:** Government of Pakistan / Ministry of Energy (Power Division)
+
+**Document:** Framework Guidelines for Fast Track Solar PV Initiatives 2022
+
+**Date:** 2 March 2022
+
+**Category:** Solar PV Development / Energy Policy / Procurement Framework
+
+**Status:** Government framework
+
+**Jurisdiction:** Pakistan
+
+**Official Source:** https://www.ppib.gov.pk/policies/Framework-Guidelines-_-Fast-Track-Solar-PV-Initiatives-2022.pdf
 
 ---
 
-## Purpose
+## Objectives
 
-The Framework Guidelines for Fast Track Solar PV Initiatives provide a framework for accelerating the development of solar photovoltaic generation projects in Pakistan.
+The initiatives seek to accelerate deployment of Solar PV energy in Pakistan.
 
-The framework forms part of Pakistan's initiatives to increase solar-energy deployment and provides pathways for developing and procuring solar PV generation.
+The stated objectives include:
 
----
-
-## Solar PV Development Pathways
-
-The framework addresses multiple types of solar PV initiatives, including:
-
-1. Utility-scale solar PV generation projects.
-2. Solar PV deployment on selected 11 kV feeders through competitive bidding.
-3. Solarization of public-sector buildings and facilities.
-
-These pathways have different project characteristics, scales, connection arrangements and implementation requirements.
-
-SolarGrid AI should therefore identify the proposed project type before applying information from this framework.
+- substitution of expensive imported fossil fuels used for power generation with Solar PV energy to the extent feasible;
+- lowering the average system generation cost;
+- maximum utilization of existing transmission networks for off-take of electric power for federally owned public power utilities;
+- reduced reliance on imported fossil fuels;
+- value for money through open and transparent competitive bidding and/or Government-to-Government arrangements;
+- enabling, encouraging and facilitating private-sector investment in renewable-energy deployment.
 
 ---
 
-## High-Loss Feeder Solar PV
+## Scope
 
-The framework includes solar PV initiatives associated with selected high-loss 11 kV feeders.
+Solar PV deployments under the initiatives include:
 
-For the relevant feeder-based initiatives, solar PV projects can be developed through a competitive-bidding approach.
-
-The framework provides for projects on selected high-loss feeders with a maximum project size of **4 MW**.
-
-This is particularly relevant to SolarGrid AI when evaluating distributed or feeder-level solar-development opportunities.
+1. Substitution of expensive imported fossil fuels with Solar PV energy.
+2. Solar PV generation on 11 kV feeders.
+3. Solarization of public buildings.
 
 ---
 
-## Utility-Scale Solar PV
+## Solar PV Generation for Fuel Substitution
 
-The framework also provides a pathway for utility-scale solar PV development.
+Under this initiative, Solar PV generation capacity is solicited for substitution of expensive imported fossil fuels used for power generation.
 
-For a utility-scale project, SolarGrid AI should use this framework as a policy and project-development reference while separately checking:
+The framework states that the purpose is to use solar energy during daytime in substitution of imported-fuel-based thermal generation while the same thermal generation capacity can be used at night to meet peak demand.
 
-- Applicable NEPRA regulations.
-- Grid-connectivity requirements.
-- Applicable Grid Code requirements.
-- Site-specific technical conditions.
-- Procurement or competitive-bidding requirements where applicable.
-- Project economics.
-- Land and site conditions.
-- Solar-resource characteristics.
-- Required permits and approvals.
+Appropriate Solar PV generation capacity is procured based on identification of imported-fuel-based thermal power plants whose fuel can be substituted with solar energy during the day according to technical and contractual limitations.
 
-The Fast Track Solar PV framework should therefore not be treated as a substitute for project-specific technical, financial or regulatory analysis.
+The fuel-substitution capacity is established in IPP mode through competitive bidding or Government-to-Government processes.
 
----
+Project land is to be acquired by NTDC and provided to project sponsors on lease by the Government of Pakistan through AEDB.
 
-## Public-Sector Solarization
+Grid interconnection is to be provided by NTDC.
 
-The framework also covers solarization of public-sector buildings and facilities.
+CPPA is to purchase all power generated by the project.
 
-Such projects can have different characteristics from utility-scale generation projects because the project may involve:
+The project term is 25 years on a BOOT basis.
 
-- Existing public-sector facilities.
-- On-site electricity consumption.
-- Existing electrical infrastructure.
-- Different connection arrangements.
-- Different procurement or implementation mechanisms.
+The framework specifies bid bonds, performance guarantees and fees through Annexure-1.
 
-SolarGrid AI should distinguish these projects from utility-scale solar generation when assessing applicability.
+NEPRA may determine a unit-based benchmark tariff for competitive bidding, although bidding may also proceed without a benchmark tariff.
+
+A single-stage, two-envelope bidding approach is specified.
+
+Projects are required to achieve Financial Closing within six months of issuance of the Letter of Support and Commercial Operation Date within ten to twenty-four months after Financial Closing, depending on project size.
 
 ---
 
-## Relevance to SolarGrid AI
+## Solar PV Generation on 11 kV Feeders
 
-The framework allows the SolarGrid AI Project Intake Agent to classify a proposed solar project into a potentially relevant development pathway.
+The framework addresses Solar PV generation at the 11 kV feeder level.
 
-For example:
+Solar PV projects of suitable capacity up to a maximum of 4 MW may be procured through competitive bidding at 11 kV feeder level.
 
-### Example A — 50 MW Solar PV Project
+Suitable Solar PV capacity is installed at 11 kV feeders of DISCOs through competitive bidding.
 
-A 50 MW utility-scale Solar PV project should primarily be assessed as a utility-scale generation project.
+NEPRA provides a unit-based benchmark tariff for conducting the competitive bidding by DISCOs.
 
-The agent should retrieve relevant grid-connectivity, generation, regulatory and financial evidence in addition to this framework.
+A single-stage, two-envelope bidding approach is specified.
 
-### Example B — 4 MW Solar PV Project on a Selected 11 kV Feeder
+Fifty percent of the total tariff is indexed quarterly with Pakistan CPI up to a maximum of 15 percent, with no other indexation provided for the project term.
 
-A project proposed for a qualifying high-loss 11 kV feeder may be relevant to the feeder-based solar PV pathway described in this framework.
+Projects are required to achieve COD within 200 days from the date the EPA is signed.
 
-The agent should verify whether the specific feeder and project meet the applicable requirements rather than assuming eligibility.
+The DISCO purchases all power generated by projects under an EPA.
 
-### Example C — Public Building Solar Project
+The project term is 25 years on a BOO basis and may be extended with mutual consent subject to NEPRA approval.
 
-A Solar PV installation intended for a public-sector building should be evaluated under the relevant public-sector solarization pathway and its applicable technical and procurement requirements.
-
----
-
-## Project Classification Rule
-
-SolarGrid AI should not determine regulatory applicability from project capacity alone.
-
-The agent should consider at least:
-
-- Project capacity.
-- Technology.
-- Project type.
-- Intended use of electricity.
-- Proposed grid connection.
-- Whether the project is associated with a qualifying feeder.
-- Whether the project is a public-sector installation.
-- Applicable procurement mechanism.
-- Applicable NEPRA regulations.
-
-If insufficient information is available, the agent should identify the missing information rather than assume the project pathway.
+Bid bonds, performance guarantees and applicable fees are specified through Annexure-1.
 
 ---
 
-## Evidence Classification
+## Solarization of Public Sector Buildings
 
-**Primary evidence:** The existence and scope of the Fast Track Solar PV framework and the solar-development pathways described above are based on the Government of Pakistan / Ministry of Energy framework identified in the source metadata.
+The framework covers Solar PV systems for public-sector buildings.
 
-**AI interpretation:** SolarGrid AI can use the framework to classify the potential development pathway of a proposed solar PV project.
+Building-specific Solar PV net-metering-based systems are to be installed through bidding by public-sector entities using:
 
-**Project-specific determination:** Whether a particular project qualifies for a specific pathway requires verification against the applicable project, site, feeder, procurement and regulatory conditions.
+1. Lease Model — 10-year BOOT basis.
+2. Own-Cost Model.
 
----
+Government departments provide space for Solar PV installations.
 
-## Relationship With Other Regulatory Sources
+A minimum annual energy yield is guaranteed by the vendor or lessor.
 
-This framework should be used together with, rather than instead of, other applicable sources.
+All power generated by the Solar PV systems becomes the property of the government department.
 
-For grid-connected renewable-energy projects, SolarGrid AI should also investigate the applicable:
+For the Lease Model, fixed quarterly payments are determined through bidding.
 
-- NEPRA grid-connectivity requirements.
-- Grid Code requirements.
-- Distribution or transmission requirements.
-- Interconnection regulations.
-- Open-access or wheeling requirements where relevant.
-- Environmental and land-related requirements.
-- Project-specific technical requirements.
+AEDB is responsible for preparing model bidding documents and contract agreements and supporting public-sector entities for procurement where required.
 
-The framework itself does not establish that a project has available grid capacity or is technically feasible.
+AEDB facilitates third-party validation of installations prior to commissioning where applicable.
 
 ---
 
-## Limitations
+## Tariff
 
-This source does not by itself establish:
-
-- Solar irradiation at a particular project site.
-- Energy yield.
-- Available grid capacity.
-- A project-specific point of interconnection.
-- Network-upgrade requirements.
-- Project CAPEX.
-- Project OPEX.
-- Project revenue.
-- LCOE.
-- NPV.
-- IRR.
-- Project financial viability.
-- Site-specific land availability.
-- Project-specific environmental approvals.
-
-These questions require additional data and analysis.
+For all modes of procurement stipulated in the framework, the tariff is denominated in Pakistan Rupees.
 
 ---
 
-## Citation
+## Annexure — Fees and Charges
 
-Government of Pakistan / Ministry of Energy (Power Division), **Framework Guidelines for Fast Track Solar PV Initiatives 2022**, dated 2 March 2022.
+The framework specifies fees and charges including:
 
-Official source:
+- RFP issuance fee: US$500.
+- Bid processing fee: US$500/MW, capped at US$50,000.
+- Bid bond: US$10,000/MW.
+- Performance guarantee: US$20,000/MW.
+- Project processing fee / Letter of Support issuance fee: US$800/MW, subject to minimum and maximum amounts specified in the framework.
+- Additional fee upon achievement of Financial Closing: US$500/MW, subject to minimum and maximum amounts specified in the framework.
 
-https://www.ppib.gov.pk/policies/Framework-Guidelines-_-Fast-Track-Solar-PV-Initiatives-2022.pdf
+---
+
+## Source Reference
+
+Government of Pakistan / Ministry of Energy (Power Division), Framework Guidelines for Fast Track Solar PV Initiatives 2022, dated 2 March 2022.
