@@ -41,7 +41,7 @@ st.set_page_config(
 
 
 # =========================================================
-# STYLING
+# BASIC STYLING
 # =========================================================
 
 st.markdown(
@@ -75,7 +75,7 @@ st.markdown(
 # =========================================================
 
 @st.cache_resource
-def load_rag(version="rag-v5"):
+def load_rag(version="rag-v6"):
     return LocalRAG()
 
 
@@ -97,10 +97,8 @@ DEFAULT_AGENT_STATES = {
 
 for key, value in DEFAULT_AGENT_STATES.items():
 
-    state_key = f"agent_{key}"
-
-    if state_key not in st.session_state:
-        st.session_state[state_key] = value
+    if f"agent_{key}" not in st.session_state:
+        st.session_state[f"agent_{key}"] = value
 
 
 if "technical_result" not in st.session_state:
@@ -132,16 +130,14 @@ if "activity_log" not in st.session_state:
 
 
 # =========================================================
-# HELPERS
+# HELPER FUNCTIONS
 # =========================================================
 
 def check_groq_configuration():
-
     try:
         return bool(
             st.secrets.get("GROQ_API_KEY")
         )
-
     except Exception:
         return False
 
@@ -166,21 +162,13 @@ def reset_workflow():
         ] = "Ready"
 
     st.session_state.technical_result = None
-
     st.session_state.regulatory_result = None
-
     st.session_state.regulatory_evidence = []
-
     st.session_state.grid_result = None
-
     st.session_state.financial_result = None
-
     st.session_state.risk_result = None
-
     st.session_state.project_manager_result = None
-
     st.session_state.workflow_complete = False
-
     st.session_state.activity_log = []
 
 
@@ -298,37 +286,54 @@ def render_agent_card(
     status,
 ):
 
-    if status == "Completed":
+    # Fixed-height native container keeps all cards
+    # visually aligned without custom HTML.
+    with st.container(
+        height=150,
+        border=True,
+    ):
 
-        st.success(
-            f"{icon}\n\n"
-            f"**{name}**\n\n"
-            f"_{status}_"
+        st.markdown(
+            f"### {icon}"
         )
 
-    elif status == "Running":
-
-        st.warning(
-            f"{icon}\n\n"
-            f"**{name}**\n\n"
-            f"_{status}_"
+        st.markdown(
+            f"**{name}**"
         )
 
-    elif status == "Error":
+        if status == "Completed":
 
-        st.error(
-            f"{icon}\n\n"
-            f"**{name}**\n\n"
-            f"_{status}_"
-        )
+            st.success(
+                "✓ Completed",
+                icon="✅",
+            )
 
-    else:
+        elif status == "Running":
 
-        st.info(
-            f"{icon}\n\n"
-            f"**{name}**\n\n"
-            f"_{status}_"
-        )
+            st.warning(
+                "Running",
+                icon="🔄",
+            )
+
+        elif status == "Error":
+
+            st.error(
+                "Error",
+                icon="⚠️",
+            )
+
+        elif status == "Active":
+
+            st.info(
+                "Active",
+                icon="📌",
+            )
+
+        else:
+
+            st.caption(
+                f"• {status}"
+            )
 
 
 # =========================================================
@@ -428,14 +433,100 @@ with st.sidebar:
         "LLM: openai/gpt-oss-120b"
     )
 
-    st.divider()
+    # -----------------------------------------------------
+    # Model assumptions / data sources
+    # -----------------------------------------------------
 
-    st.caption(
-        "SolarGrid AI provides preliminary project "
-        "screening and evidence-backed intelligence. "
-        "It is not a formal feasibility study, legal "
-        "opinion, or grid study."
-    )
+    with st.expander(
+        "📐 Model Assumptions & Data Sources"
+    ):
+
+        st.markdown(
+            "#### ⚙️ Technical"
+        )
+
+        st.write(
+            "**PVGIS-derived:**"
+        )
+
+        st.write(
+            "• Annual PV energy"
+        )
+
+        st.write(
+            "• Effective capacity factor"
+        )
+
+        st.write(
+            "• Specific yield"
+        )
+
+        st.write(
+            "• Equivalent full-load hours"
+        )
+
+        st.write(
+            "• Location coordinates"
+        )
+
+        st.write(
+            "**Fixed screening assumptions:**"
+        )
+
+        st.write(
+            "• PV system loss: 14%"
+        )
+
+        st.write(
+            "• Annual degradation: 0.5%"
+        )
+
+        st.write(
+            "• Project life: 25 years"
+        )
+
+        st.write(
+            "• Fallback capacity factor: 22%"
+        )
+
+        st.write(
+            "• Fallback performance ratio: 80%"
+        )
+
+        st.markdown(
+            "#### 💰 Financial"
+        )
+
+        st.write(
+            "**Fixed screening assumptions:**"
+        )
+
+        st.write(
+            "• Tariff: 25 PKR/kWh"
+        )
+
+        st.write(
+            "• CAPEX: 180 M PKR/MW"
+        )
+
+        st.write(
+            "• O&M: 2% of CAPEX/year"
+        )
+
+        st.write(
+            "• Discount rate: 10%"
+        )
+
+        st.write(
+            "• Project life: 25 years"
+        )
+
+        st.caption(
+            "Fixed values are illustrative screening assumptions, "
+            "not project-specific commercial offers or measurements."
+        )
+
+    st.divider()
 
     if st.button(
         "↻ Reset Project Analysis",
@@ -449,7 +540,7 @@ with st.sidebar:
 
 
 # =========================================================
-# MAIN HEADER
+# HEADER
 # =========================================================
 
 st.title("☀️ SolarGrid AI")
@@ -494,8 +585,8 @@ with c3:
 with c4:
 
     st.metric(
-        "Grid Connection",
-        st.session_state.grid_voltage,
+        "Location",
+        st.session_state.location,
     )
 
 
@@ -576,7 +667,7 @@ for column, (
 
 
 # =========================================================
-# FULL WORKFLOW BUTTON
+# MAIN ACTION
 # =========================================================
 
 st.divider()
@@ -595,12 +686,10 @@ with run_col:
 
 with clear_col:
 
-    clear_workflow = st.button(
+    if st.button(
         "Clear",
         use_container_width=True,
-    )
-
-    if clear_workflow:
+    ):
 
         reset_workflow()
 
@@ -608,7 +697,7 @@ with clear_col:
 
 
 # =========================================================
-# FULL MULTI-AGENT EXECUTION
+# FULL MULTI-AGENT WORKFLOW
 # =========================================================
 
 if run_full_workflow:
@@ -627,7 +716,6 @@ if run_full_workflow:
 
         project = get_project()
 
-        # Automatically generated regulatory question
         regulatory_question = (
             f"What regulatory requirements should be "
             f"considered for a {project['capacity']} MW "
@@ -636,17 +724,13 @@ if run_full_workflow:
             f"{project['grid_voltage']} grid connection?"
         )
 
-        # -------------------------------------------------
-        # WORKFLOW STATUS DISPLAY
-        # -------------------------------------------------
-
         with st.status(
             "Running SolarGrid AI multi-agent workflow...",
             expanded=True,
         ) as workflow_status:
 
             # =============================================
-            # 1 — TECHNICAL ENGINEER
+            # 1 — TECHNICAL
             # =============================================
 
             st.session_state.agent_technical = "Running"
@@ -656,8 +740,8 @@ if run_full_workflow:
             )
 
             st.write(
-                "Running location-aware solar PV "
-                "engineering analysis..."
+                "Resolving project location and "
+                "estimating PV production..."
             )
 
             try:
@@ -698,8 +782,8 @@ if run_full_workflow:
                 ):
 
                     st.write(
-                        "📍 PVGIS location resolved for "
-                        f"{technical_results.get('location_name', project['location'])}."
+                        "📍 PVGIS location resolved: "
+                        f"{technical_results.get('location_name', project['location'])}"
                     )
 
                     st.write(
@@ -710,8 +794,8 @@ if run_full_workflow:
                 else:
 
                     st.write(
-                        "⚠️ PVGIS was unavailable; "
-                        "fallback screening calculation used."
+                        "⚠️ PVGIS unavailable; "
+                        "fallback screening assumptions used."
                     )
 
             except Exception as exc:
@@ -738,7 +822,7 @@ if run_full_workflow:
 
 
             # =============================================
-            # 2 — REGULATORY INTELLIGENCE
+            # 2 — REGULATORY
             # =============================================
 
             st.session_state.agent_regulatory = (
@@ -863,7 +947,7 @@ if run_full_workflow:
 
 
             # =============================================
-            # 3 — GRID ENGINEER
+            # 3 — GRID
             # =============================================
 
             st.session_state.agent_grid = "Running"
@@ -874,7 +958,7 @@ if run_full_workflow:
 
             st.write(
                 "Performing preliminary grid-integration "
-                "screening using regulatory evidence..."
+                "screening..."
             )
 
             try:
@@ -926,7 +1010,7 @@ if run_full_workflow:
 
 
             # =============================================
-            # 4 — FINANCIAL ANALYST
+            # 4 — FINANCIAL
             # =============================================
 
             st.session_state.agent_financial = (
@@ -1003,7 +1087,7 @@ if run_full_workflow:
 
 
             # =============================================
-            # 5 — RISK ANALYST
+            # 5 — RISK
             # =============================================
 
             st.session_state.agent_risk = "Running"
@@ -1076,13 +1160,11 @@ if run_full_workflow:
             )
 
             st.write(
-                "🧠 **6/6 — Project Manager / "
-                "Synthesis Agent**"
+                "🧠 **6/6 — Project Manager**"
             )
 
             st.write(
-                "Synthesizing specialist-agent "
-                "outputs..."
+                "Synthesizing specialist-agent outputs..."
             )
 
             try:
@@ -1218,9 +1300,13 @@ with tab1:
             )
         )
 
-        # ---------------------------------------------
+        # -------------------------------------------------
         # Main KPIs
-        # ---------------------------------------------
+        # -------------------------------------------------
+
+        st.markdown(
+            "### Key Results"
+        )
 
         d1, d2, d3, d4 = st.columns(4)
 
@@ -1262,9 +1348,9 @@ with tab1:
 
         st.divider()
 
-        # ---------------------------------------------
-        # Location-based energy basis
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Energy model provenance
+        # -------------------------------------------------
 
         st.markdown(
             "### Energy Estimate Basis"
@@ -1279,6 +1365,10 @@ with tab1:
             "PVGIS 5.3 location-based estimate"
         ):
 
+            st.success(
+                "📍 Production estimate sourced from PVGIS 5.3"
+            )
+
             e1, e2, e3, e4 = st.columns(4)
 
             with e1:
@@ -1291,7 +1381,7 @@ with tab1:
             with e2:
 
                 st.metric(
-                    "Resolved Location",
+                    "Location",
                     technical_results.get(
                         "location_name",
                         st.session_state.location,
@@ -1313,24 +1403,68 @@ with tab1:
                 )
 
             st.caption(
-                "The energy estimate uses the entered project "
-                "location and PVGIS 5.3. It is a preliminary "
-                "screening estimate, not a bankable yield study."
+                "PVGIS-derived values: annual energy, specific yield, "
+                "equivalent full-load hours and effective capacity factor."
             )
 
         else:
 
             st.warning(
-                "PVGIS location-based estimation was unavailable. "
-                "The Technical Engineer used the fallback screening "
-                "assumptions."
+                "PVGIS was unavailable or the location could not "
+                "be resolved. The Technical Engineer used fixed "
+                "screening assumptions instead."
             )
 
         st.divider()
 
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Fixed technical assumptions
+        # -------------------------------------------------
+
+        st.markdown(
+            "### Fixed Technical Screening Assumptions"
+        )
+
+        a1, a2, a3, a4 = st.columns(4)
+
+        with a1:
+
+            st.metric(
+                "System Loss",
+                "14%",
+            )
+
+        with a2:
+
+            st.metric(
+                "Annual Degradation",
+                "0.5%",
+            )
+
+        with a3:
+
+            st.metric(
+                "Project Life",
+                "25 years",
+            )
+
+        with a4:
+
+            st.metric(
+                "Fallback CF",
+                "22%",
+            )
+
+        st.caption(
+            "The fallback 22% capacity factor is used only when "
+            "PVGIS cannot provide a location-based estimate."
+        )
+
+        st.divider()
+
+        # -------------------------------------------------
         # Agent completion
-        # ---------------------------------------------
+        # -------------------------------------------------
 
         st.markdown(
             "### Agent Completion"
@@ -1342,26 +1476,31 @@ with tab1:
                 "Technical",
                 st.session_state.agent_technical,
             ),
+
             (
                 "📚",
                 "Regulatory",
                 st.session_state.agent_regulatory,
             ),
+
             (
                 "🔌",
                 "Grid",
                 st.session_state.agent_grid,
             ),
+
             (
                 "💰",
                 "Financial",
                 st.session_state.agent_financial,
             ),
+
             (
                 "⚠️",
                 "Risk",
                 st.session_state.agent_risk,
             ),
+
             (
                 "🧠",
                 "Project Manager",
@@ -1407,15 +1546,15 @@ with tab1:
 
         st.divider()
 
-        # ---------------------------------------------
+        # -------------------------------------------------
         # Financial assumptions
-        # ---------------------------------------------
+        # -------------------------------------------------
 
         st.markdown(
-            "### Financial Screening Assumptions"
+            "### Fixed Financial Screening Assumptions"
         )
 
-        f1, f2, f3, f4 = st.columns(4)
+        f1, f2, f3, f4, f5 = st.columns(5)
 
         with f1:
 
@@ -1435,7 +1574,7 @@ with tab1:
 
             st.metric(
                 "O&M",
-                "2% of CAPEX",
+                "2% / year",
             )
 
         with f4:
@@ -1445,9 +1584,16 @@ with tab1:
                 "10%",
             )
 
+        with f5:
+
+            st.metric(
+                "Project Life",
+                "25 years",
+            )
+
         st.caption(
-            "These financial values are screening assumptions "
-            "and are not project-specific commercial terms."
+            "These are fixed illustrative screening assumptions. "
+            "They are not project-specific commercial terms."
         )
 
 
@@ -1528,7 +1674,7 @@ with tab3:
 
 
 # =========================================================
-# TAB 4 — TECHNICAL ENGINEER
+# TAB 4 — TECHNICAL
 # =========================================================
 
 with tab4:
@@ -1555,9 +1701,9 @@ with tab4:
             {},
         )
 
-        # ---------------------------------------------
-        # Main results
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Results
+        # -------------------------------------------------
 
         t1, t2, t3, t4 = st.columns(4)
 
@@ -1591,15 +1737,15 @@ with tab4:
         with t4:
 
             st.metric(
-                "25-Year Energy",
+                "Lifetime Energy",
                 f"{results.get('lifetime_generation_gwh', 0):,.1f} GWh",
             )
 
         st.divider()
 
-        # ---------------------------------------------
-        # Location information
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Data source
+        # -------------------------------------------------
 
         if results.get(
             "data_source"
@@ -1608,10 +1754,11 @@ with tab4:
         ):
 
             st.success(
-                "📍 Location-based PVGIS estimate"
+                "📍 Energy production is based on a PVGIS 5.3 "
+                "location-specific estimate."
             )
 
-            l1, l2, l3 = st.columns(3)
+            l1, l2, l3, l4 = st.columns(4)
 
             with l1:
 
@@ -1637,17 +1784,28 @@ with tab4:
                     f"{results.get('longitude', 0):.4f}",
                 )
 
+            with l4:
+
+                st.metric(
+                    "System Loss",
+                    f"{results.get('system_loss_pct', 0):.1f}%",
+                )
+
             st.caption(
                 f"PVGIS specific yield: "
                 f"{results.get('specific_yield_kwh_per_kwp', 0):,.1f} "
-                f"kWh/kWp/year | "
-                f"System loss assumption: "
-                f"{results.get('system_loss_pct', 0):.1f}%"
+                f"kWh/kWp/year"
             )
 
             st.caption(
-                f"PVGIS calculated effective capacity factor: "
+                f"PVGIS effective capacity factor: "
                 f"{results.get('capacity_factor_pct', 0):.2f}%"
+            )
+
+            st.caption(
+                "PVGIS configuration: crystalline-silicon PV, "
+                "free-standing fixed mounting, optimized angle, "
+                "with the configured 14% system-loss assumption."
             )
 
         else:
@@ -1659,11 +1817,17 @@ with tab4:
                 )
             )
 
+            st.caption(
+                "Fallback assumptions: 22% capacity factor, "
+                "80% performance ratio, 0.5% annual degradation, "
+                "25-year project life."
+            )
+
         st.divider()
 
-        # ---------------------------------------------
+        # -------------------------------------------------
         # AI technical assessment
-        # ---------------------------------------------
+        # -------------------------------------------------
 
         st.markdown(
             "### AI Technical Assessment"
@@ -1678,12 +1842,12 @@ with tab4:
 
         st.divider()
 
-        # ---------------------------------------------
-        # Method / assumptions
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Assumption ledger
+        # -------------------------------------------------
 
         st.markdown(
-            "### Calculation Basis"
+            "### Technical Assumption Ledger"
         )
 
         if results.get(
@@ -1692,47 +1856,67 @@ with tab4:
             "PVGIS 5.3 location-based estimate"
         ):
 
-            st.write(
-                "Energy model: PVGIS 5.3"
+            st.success(
+                "PVGIS-derived"
             )
 
             st.write(
-                "Location: "
-                + str(
-                    results.get(
-                        "location_name",
-                        "",
-                    )
-                )
+                "• Annual PV energy"
             )
 
             st.write(
-                "Annual degradation: "
-                f"{results.get('annual_degradation_pct', 0):.1f}%"
+                "• Specific yield"
+            )
+
+            st.write(
+                "• Effective capacity factor"
+            )
+
+            st.write(
+                "• Equivalent full-load hours"
+            )
+
+            st.write(
+                "• Project coordinates"
+            )
+
+            st.warning(
+                "Fixed assumptions"
+            )
+
+            st.write(
+                "• System loss = 14%"
+            )
+
+            st.write(
+                "• Annual degradation = 0.5%"
+            )
+
+            st.write(
+                "• Project life = 25 years"
             )
 
         else:
 
-            st.write(
-                "Fallback capacity factor: "
-                f"{results.get('capacity_factor_pct', 0):.1f}%"
+            st.warning(
+                "Fallback fixed assumptions"
             )
 
             st.write(
-                "Fallback performance ratio: "
-                f"{results.get('performance_ratio_pct', 0):.1f}%"
+                "• Capacity factor = 22%"
             )
 
             st.write(
-                "Annual degradation: "
-                f"{results.get('annual_degradation_pct', 0):.1f}%"
+                "• Performance ratio = 80%"
             )
 
-        st.caption(
-            "These results are preliminary engineering screening "
-            "outputs and should not be treated as a bankable "
-            "energy-yield assessment."
-        )
+            st.write(
+                "• Annual degradation = 0.5%"
+            )
+
+            st.write(
+                "• Project life = 25 years"
+            )
 
 
 # =========================================================
