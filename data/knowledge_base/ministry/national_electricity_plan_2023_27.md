@@ -2,153 +2,144 @@
 
 ## Source Metadata
 
-- **Authority:** Ministry of Energy (Power Division), Government of Pakistan
-- **Document:** National Electricity Plan 2023–27
-- **Date:** 25 September 2023
-- **Category:** Electricity Planning / Energy Policy / Renewable Energy
-- **Status:** National electricity-sector planning framework
-- **Jurisdiction:** Pakistan
-- **Official Source:** https://www.power.gov.pk/SiteImage/Policy/National%20Electricity%20Plan%202023-27.pdf
+**Authority:** Ministry of Energy (Power Division), Government of Pakistan
+
+**Document:** National Electricity Plan 2023–27
+
+**Date:** 25 September 2023
+
+**Category:** Electricity Planning / Energy Policy / Renewable Energy
+
+**Status:** National electricity-sector planning framework
+
+**Jurisdiction:** Pakistan
+
+**Official Source:** https://www.power.gov.pk/SiteImage/Policy/National%20Electricity%20Plan%202023-27.pdf
 
 ---
 
 ## Purpose
 
-The National Electricity Plan 2023–27 provides a national framework for planning and implementing developments in Pakistan's electricity sector.
+The National Electricity Plan 2023–27 is Pakistan's first National Electricity Plan and provides an implementation framework for the National Electricity Policy 2021.
 
-It provides a planning context for electricity generation, transmission, distribution, sector development and related policy objectives during the 2023–27 planning period.
-
-SolarGrid AI should use this document to understand the broader national electricity-sector context in which a renewable-energy project is being evaluated.
+The plan covers electricity-sector development through a structured framework of objectives, priority areas, strategic directives, performance indicators and targets.
 
 ---
 
-## Relevance to Renewable Energy
+## Strategic Objectives
 
-Renewable-energy development forms part of Pakistan's broader electricity-sector planning and development framework.
+The plan identifies six broad objectives:
 
-For SolarGrid AI, the National Electricity Plan can therefore provide context when evaluating questions such as:
-
-- How a proposed renewable-energy project relates to national electricity planning.
-- The role of renewable generation within electricity-sector development.
-- The relationship between generation expansion and transmission/distribution planning.
-- Broader electricity-sector development priorities.
-
-The plan should be treated as a **planning and policy source**, rather than as a project-specific technical feasibility document.
+1. Diversification
+2. Resilience and Accessibility
+3. Self-Sufficiency
+4. Affordability
+5. Financial Viability
+6. Sustainability
 
 ---
 
-## Role in SolarGrid AI
+## Priority Areas
 
-The National Electricity Plan should primarily support the **Project Intake Agent**, **Regulatory Intelligence Agent** and **Project Manager Agent**.
+The plan identifies twenty priority areas mapped under the six broad objectives.
 
-The agents can use it to place a proposed project within the broader national electricity-planning context.
+Each priority area is associated with strategic directives and monitoring arrangements.
 
-For example, when assessing a proposed Solar PV project, SolarGrid AI may identify that renewable-energy development is relevant to national electricity planning.
+The plan includes areas such as:
 
-However, the agent should not conclude from this alone that the proposed project is technically feasible, financially viable or automatically approved.
-
----
-
-## Relationship With Other Sources
-
-The National Electricity Plan should be interpreted together with more specific regulatory and technical sources.
-
-For a proposed renewable-energy project, SolarGrid AI should distinguish between:
-
-### National Planning Context
-
-The National Electricity Plan provides broad electricity-sector planning context.
-
-### Regulatory Requirements
-
-NEPRA regulations establish applicable regulatory requirements.
-
-### Technical Requirements
-
-Grid-connectivity regulations, Grid Code requirements and other technical standards establish technical requirements for grid connection and operation.
-
-### Project-Specific Feasibility
-
-Project-specific technical, financial, site and grid assessments determine whether an individual project is feasible.
-
-These categories should not be treated as interchangeable.
+- generation expansion;
+- transmission network expansion;
+- distribution infrastructure;
+- renewable-energy development;
+- energy efficiency and conservation;
+- decarbonization;
+- digitalization;
+- institutional improvement and capacity building;
+- research and development;
+- investment and related power-sector development matters.
 
 ---
 
-## Evidence Classification
+## Generation Planning
 
-**Primary evidence:** The National Electricity Plan provides the national electricity-sector planning framework and associated planning context.
+Generation capacity additions are addressed through integrated generation planning.
 
-**AI interpretation:** SolarGrid AI can use the plan to explain how a renewable-energy project relates to broader electricity-sector planning.
+The plan provides for mechanisms governing inclusion of generation projects in the Indicative Generation Capacity Expansion Plan (IGCEP).
 
-**Project-specific determination:** The plan does not by itself establish whether a specific renewable-energy project should be developed, connected to the grid or financed.
+The plan states that generation procurement for consumers of a Supplier of Last Resort is to be undertaken in accordance with approved power acquisition programs and applicable procurement regulations.
 
----
-
-## Use in Project Assessment
-
-When a user submits a project to SolarGrid AI, the system may use the National Electricity Plan to provide contextual information about:
-
-- Electricity-sector planning.
-- Generation development.
-- Transmission and distribution development.
-- Renewable-energy development.
-- Broader sector priorities.
-- The relationship between proposed projects and national electricity planning.
-
-The system should clearly label this information as **national planning context**.
+The plan provides that tariff for generation projects is to be awarded through competitive bidding, while cost-plus mode may apply where competitive bidding is not possible for power procurements by the Supplier of Last Resort.
 
 ---
 
-## What This Source Cannot Establish
+## Renewable Energy Development
 
-The National Electricity Plan does not by itself establish:
+The plan includes renewable energy within generation expansion planning.
 
-- Solar irradiation at a specific site.
-- Expected annual solar generation.
-- Capacity factor.
-- Project energy yield.
-- Available grid capacity.
-- Point of interconnection.
-- Feeder or transmission-line capacity.
-- Required network upgrades.
-- Project CAPEX.
-- Project OPEX.
-- Project revenue.
-- LCOE.
-- NPV.
-- IRR.
-- Project financial viability.
-- Site-specific land availability.
-- Site-specific environmental approvals.
-- Project-specific regulatory approval.
+Subject to the least-cost criterion, the plan envisages on-grid renewable-energy targets of:
 
-These questions require additional evidence, project data and technical or financial analysis.
+- 40 percent of total generation capacity by FY2025.
+- 60 percent of total generation capacity by FY2030.
+
+The plan also addresses distributed energy resources and their integration into sector-level planning.
+
+The targets stated above are planning targets contained in the 2023–27 National Electricity Plan.
 
 ---
 
-## Important Agent Rule
+## Transmission Network Planning
 
-SolarGrid AI should **not use national planning statements as evidence of project approval or project feasibility**.
+The plan identifies robust and flexible transmission infrastructure as an important component of power-sector development.
 
-For example:
+Transmission network expansion planning is intended to support:
 
-Incorrect reasoning:
+- generation expansion plans;
+- load distribution;
+- contingencies;
+- network stability;
+- congestion management;
+- secure and economic transmission of electricity.
 
-> "Renewable energy is part of national electricity planning, therefore this Solar PV project is feasible."
+The plan provides for development and approval of the Transmission System Expansion Plan (TSEP) on an annual basis along with the respective IGCEP.
 
-Correct reasoning:
+The National Grid Company is responsible for development of TSEP in consultation with DISCOs and Provincial Grid Companies.
 
-> "The National Electricity Plan provides national planning context for renewable-energy development. Project-specific technical, grid, regulatory and financial assessments are still required."
+The developed TSEP is submitted to the Regulator for approval.
 
-This distinction should be maintained in the final AI report.
+Approved TSEP forms the basis for transmission and distribution investment plans.
 
 ---
 
-## Citation
+## Distribution Infrastructure
 
-Ministry of Energy (Power Division), Government of Pakistan, **National Electricity Plan 2023–27**, dated 25 September 2023.
+The plan identifies distribution infrastructure as a key segment of the electricity value chain.
 
-Official source:
+It addresses development and operation of distribution networks, integration with generation and transmission plans, technical and safety performance, commercial performance and policy and regulatory compliance.
 
-https://www.power.gov.pk/SiteImage/Policy/National%20Electricity%20Plan%202023-27.pdf
+The plan provides for state-owned distribution companies to develop strategic roadmaps and for distribution planning to be aligned with relevant generation and transmission plans where applicable.
+
+---
+
+## System Operations
+
+The plan identifies effective and efficient system operation as important for safe, reliable, non-discriminatory and economic dispatch of electric power.
+
+System-operation planning is linked to the broader generation and transmission planning framework.
+
+---
+
+## Monitoring and Reporting
+
+The National Electricity Plan includes a monitoring and reporting framework.
+
+Priority areas contain performance indicators, responsible entities and defined targets.
+
+The plan provides for periodic reporting and review of implementation progress.
+
+The first National Electricity Plan remains applicable through FY2027 as the stated control period of the plan.
+
+---
+
+## Source Reference
+
+Ministry of Energy (Power Division), Government of Pakistan, National Electricity Plan 2023–27, dated 25 September 2023.
