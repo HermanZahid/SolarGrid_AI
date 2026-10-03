@@ -331,9 +331,10 @@ with st.sidebar:
     )
 
     st.text_input(
-        "Location",
-        "Pakistan",
-        key="location",
+    "City / Project Location",
+    "Lahore, Pakistan",
+    key="location",
+)
     )
 
     st.selectbox(
@@ -1245,39 +1246,66 @@ with tab1:
         st.divider()
 
         st.markdown(
-            "### Key Screening Assumptions"
+    "### Energy Estimate Basis"
+)
+
+technical_results = (
+    st.session_state.technical_result
+    .get(
+        "results",
+        {},
+    )
+)
+
+source = technical_results.get(
+    "data_source",
+    "Unknown",
+)
+
+if source == "PVGIS 5.3 location-based estimate":
+
+    e1, e2, e3, e4 = st.columns(4)
+
+    with e1:
+        st.metric(
+            "Energy Model",
+            "PVGIS 5.3",
         )
 
-        s1, s2, s3, s4 = st.columns(4)
-
-        with s1:
-            st.metric(
-                "Capacity Factor",
-                "22%",
-            )
-
-        with s2:
-            st.metric(
-                "Performance Ratio",
-                "80%",
-            )
-
-        with s3:
-            st.metric(
-                "Annual Degradation",
-                "0.5%",
-            )
-
-        with s4:
-            st.metric(
-                "Project Life",
-                "25 years",
-            )
-
-        st.caption(
-            "These are screening assumptions, not site "
-            "measurements or project-specific commercial terms."
+    with e2:
+        st.metric(
+            "Location",
+            technical_results.get(
+                "location_name",
+                st.session_state.location,
+            ),
         )
+
+    with e3:
+        st.metric(
+            "Specific Yield",
+            f"{technical_results.get('specific_yield_kwh_per_kwp', 0):,.0f} kWh/kWp",
+        )
+
+    with e4:
+        st.metric(
+            "Effective Capacity Factor",
+            f"{technical_results.get('capacity_factor_pct', 0):.1f}%",
+        )
+
+    st.caption(
+        "Production is estimated using the project location, "
+        "PVGIS 5.3 and the configured PV system assumptions. "
+        "This is a preliminary estimate, not a bankable yield study."
+    )
+
+else:
+
+    st.warning(
+        "PVGIS was unavailable or the project location "
+        "could not be resolved. The Technical Agent used "
+        "screening assumptions instead."
+    )
 
 
 # =========================================================
@@ -1426,7 +1454,34 @@ with tab4:
                 "",
             )
         )
+if results.get("data_source") == (
+    "PVGIS 5.3 location-based estimate"
+):
 
+    st.info(
+        f"📍 Location-based PVGIS estimate: "
+        f"{results.get('location_name', '')}, "
+        f"{results.get('country', '')} "
+        f"({results.get('latitude', 0):.4f}, "
+        f"{results.get('longitude', 0):.4f})"
+    )
+
+    st.caption(
+        f"PVGIS specific yield: "
+        f"{results.get('specific_yield_kwh_per_kwp', 0):,.1f} "
+        f"kWh/kWp/year | "
+        f"System loss assumption: "
+        f"{results.get('system_loss_pct', 0):.1f}%"
+    )
+
+else:
+
+    st.warning(
+        results.get(
+            "location_note",
+            "Location-specific PVGIS data was not available.",
+        )
+    )
 
 # =========================================================
 # TAB 5 — RAG TEST LAB
