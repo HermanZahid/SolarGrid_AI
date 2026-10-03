@@ -1,12 +1,30 @@
 import streamlit as st
 
 from rag.rag_engine import LocalRAG
+
+from agents.technical_agent import (
+    analyze_technical_project,
+)
+
 from agents.regulatory_agent import (
     retrieve_regulatory_evidence,
     generate_regulatory_assessment,
 )
-from agents.technical_agent import (
-    analyze_technical_project,
+
+from agents.grid_agent import (
+    analyze_grid_project,
+)
+
+from agents.financial_agent import (
+    analyze_financial_project,
+)
+
+from agents.risk_agent import (
+    analyze_project_risks,
+)
+
+from agents.project_manager import (
+    synthesize_project,
 )
 
 
@@ -23,27 +41,29 @@ st.set_page_config(
 
 
 # =========================================================
-# BASIC STYLING
+# STYLING
 # =========================================================
 
 st.markdown(
     """
     <style>
+
     .block-container {
-        max-width: 1400px;
+        max-width: 1450px;
         padding-top: 1.5rem;
         padding-bottom: 4rem;
     }
 
     [data-testid="stMetric"] {
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        padding: 15px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        padding: 14px;
         border-radius: 14px;
     }
 
     [data-testid="stMetricLabel"] {
-        font-size: 0.85rem;
+        font-size: 0.82rem;
     }
+
     </style>
     """,
     unsafe_allow_html=True,
@@ -51,11 +71,11 @@ st.markdown(
 
 
 # =========================================================
-# LOAD RAG
+# RAG
 # =========================================================
 
 @st.cache_resource
-def load_rag(version="rag-v3"):
+def load_rag(version="rag-v4"):
     return LocalRAG()
 
 
@@ -66,17 +86,48 @@ rag = load_rag()
 # SESSION STATE
 # =========================================================
 
+DEFAULT_AGENT_STATES = {
+    "technical": "Ready",
+    "regulatory": "Ready",
+    "grid": "Ready",
+    "financial": "Ready",
+    "risk": "Ready",
+    "project_manager": "Ready",
+}
+
+for key, value in DEFAULT_AGENT_STATES.items():
+    state_key = f"agent_{key}"
+
+    if state_key not in st.session_state:
+        st.session_state[state_key] = value
+
+
+if "technical_result" not in st.session_state:
+    st.session_state.technical_result = None
+
 if "regulatory_result" not in st.session_state:
     st.session_state.regulatory_result = None
 
 if "regulatory_evidence" not in st.session_state:
     st.session_state.regulatory_evidence = []
 
-if "regulatory_stage" not in st.session_state:
-    st.session_state.regulatory_stage = "Ready"
+if "grid_result" not in st.session_state:
+    st.session_state.grid_result = None
 
-if "technical_result" not in st.session_state:
-    st.session_state.technical_result = None
+if "financial_result" not in st.session_state:
+    st.session_state.financial_result = None
+
+if "risk_result" not in st.session_state:
+    st.session_state.risk_result = None
+
+if "project_manager_result" not in st.session_state:
+    st.session_state.project_manager_result = None
+
+if "workflow_complete" not in st.session_state:
+    st.session_state.workflow_complete = False
+
+if "activity_log" not in st.session_state:
+    st.session_state.activity_log = []
 
 
 # =========================================================
@@ -100,6 +151,30 @@ def get_project():
         "capacity": st.session_state.capacity,
         "grid_voltage": st.session_state.grid_voltage,
     }
+
+
+def reset_workflow():
+
+    for key in DEFAULT_AGENT_STATES:
+        st.session_state[
+            f"agent_{key}"
+        ] = "Ready"
+
+    st.session_state.technical_result = None
+    st.session_state.regulatory_result = None
+    st.session_state.regulatory_evidence = []
+    st.session_state.grid_result = None
+    st.session_state.financial_result = None
+    st.session_state.risk_result = None
+    st.session_state.project_manager_result = None
+    st.session_state.workflow_complete = False
+    st.session_state.activity_log = []
+
+
+def add_log(message):
+    st.session_state.activity_log.append(
+        message
+    )
 
 
 def render_evidence(
@@ -198,10 +273,38 @@ def render_evidence(
                 )
 
 
-def clear_regulatory_result():
-    st.session_state.regulatory_result = None
-    st.session_state.regulatory_evidence = []
-    st.session_state.regulatory_stage = "Ready"
+def render_agent_card(
+    icon,
+    name,
+    status,
+):
+    if status == "Completed":
+        st.success(
+            f"{icon}\n\n"
+            f"**{name}**\n\n"
+            f"_{status}_"
+        )
+
+    elif status == "Running":
+        st.warning(
+            f"{icon}\n\n"
+            f"**{name}**\n\n"
+            f"_{status}_"
+        )
+
+    elif status == "Error":
+        st.error(
+            f"{icon}\n\n"
+            f"**{name}**\n\n"
+            f"_{status}_"
+        )
+
+    else:
+        st.info(
+            f"{icon}\n\n"
+            f"**{name}**\n\n"
+            f"_{status}_"
+        )
 
 
 # =========================================================
@@ -298,6 +401,15 @@ with st.sidebar:
         "LLM: openai/gpt-oss-120b"
     )
 
+    st.divider()
+
+    if st.button(
+        "↻ Reset Project Analysis",
+        key="reset_workflow",
+    ):
+        reset_workflow()
+        st.rerun()
+
 
 # =========================================================
 # HEADER
@@ -353,540 +465,953 @@ with c4:
 st.header("AI Workflow")
 
 st.caption(
-    "Multi-agent architecture for renewable-energy "
-    "project intelligence"
+    "Sequential multi-agent preliminary project assessment"
 )
 
 workflow = [
-    ("📥", "Project Intake", "Active"),
-    ("⚙️", "Technical Engineer", "Ready"),
-    ("🔌", "Grid Engineer", "Planned"),
-    ("💰", "Financial Analyst", "Planned"),
+    (
+        "📥",
+        "Project Intake",
+        "Active",
+    ),
+    (
+        "⚙️",
+        "Technical Engineer",
+        st.session_state.agent_technical,
+    ),
     (
         "📚",
         "Regulatory Intelligence",
-        st.session_state.regulatory_stage,
+        st.session_state.agent_regulatory,
     ),
-    ("⚠️", "Risk Analyst", "Planned"),
-    ("🧠", "Project Manager", "Planned"),
+    (
+        "🔌",
+        "Grid Engineer",
+        st.session_state.agent_grid,
+    ),
+    (
+        "💰",
+        "Financial Analyst",
+        st.session_state.agent_financial,
+    ),
+    (
+        "⚠️",
+        "Risk Analyst",
+        st.session_state.agent_risk,
+    ),
+    (
+        "🧠",
+        "Project Manager",
+        st.session_state.agent_project_manager,
+    ),
 ]
 
-cols = st.columns(
+workflow_cols = st.columns(
     len(workflow)
 )
 
-for col, (
+for column, (
     icon,
     name,
     agent_status,
 ) in zip(
-    cols,
+    workflow_cols,
     workflow,
 ):
 
-    with col:
+    with column:
 
-        st.info(
-            f"{icon}\n\n"
-            f"**{name}**\n\n"
-            f"_{agent_status}_"
+        render_agent_card(
+            icon,
+            name,
+            agent_status,
         )
 
 
 # =========================================================
-# TABS
+# MAIN ACTION
 # =========================================================
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    [
-        "🔎 Evidence Center",
-        "🤖 Regulatory AI",
-        "⚙️ Technical Engineer",
-        "🧪 RAG Test Lab",
-        "📊 Diagnostics",
-    ]
+st.divider()
+
+run_col, clear_col = st.columns(
+    [4, 1]
 )
 
+with run_col:
 
-# =========================================================
-# TAB 1 — EVIDENCE CENTER
-# =========================================================
-
-with tab1:
-
-    st.subheader(
-        "Search Pakistan Energy Evidence"
+    run_full_workflow = st.button(
+        "🚀 Run Full SolarGrid AI Feasibility Screening",
+        type="primary",
+        use_container_width=True,
     )
 
-    st.caption(
-        "Retrieve source-grounded evidence from "
-        "the SolarGrid AI knowledge base."
-    )
-
-    query = st.text_input(
-        "Ask a regulatory or energy-sector question",
-        placeholder=(
-            "Example: What are the requirements "
-            "for connecting a generation facility "
-            "to the grid?"
-        ),
-        key="evidence_query",
-    )
+with clear_col:
 
     if st.button(
-        "🔍 Retrieve Evidence",
-        type="primary",
-        key="retrieve_evidence",
+        "Clear",
+        use_container_width=True,
     ):
-
-        if not query.strip():
-
-            st.warning(
-                "Please enter a question."
-            )
-
-        else:
-
-            with st.spinner(
-                "Searching the Pakistan energy "
-                "knowledge base..."
-            ):
-
-                results = rag.search(
-                    query,
-                    k=5,
-                )
-
-            if not results:
-
-                st.warning(
-                    "No relevant evidence was found."
-                )
-
-            else:
-
-                st.success(
-                    f"Retrieved {len(results)} "
-                    "relevant evidence passages."
-                )
-
-                render_evidence(
-                    results
-                )
-
-
-# =========================================================
-# TAB 2 — REGULATORY AI
-# =========================================================
-
-with tab2:
-
-    st.subheader(
-        "🤖 Regulatory Intelligence Agent"
-    )
-
-    st.caption(
-        "GPT-OSS 120B analyzes retrieved "
-        "Pakistan-specific regulatory evidence."
-    )
-
-    question = st.text_area(
-        "Regulatory question",
-        placeholder=(
-            "Example: What regulatory requirements "
-            "should a 50 MW solar PV project consider "
-            "when connecting to the Pakistani grid?"
-        ),
-        height=110,
-        key="regulatory_question",
-    )
-
-    st.markdown(
-        "### Current Project Context"
-    )
-
-    p1, p2, p3, p4 = st.columns(4)
-
-    with p1:
-        st.metric(
-            "Technology",
-            st.session_state.technology,
-        )
-
-    with p2:
-        st.metric(
-            "Capacity",
-            f"{st.session_state.capacity:g} MW",
-        )
-
-    with p3:
-        st.metric(
-            "Voltage",
-            st.session_state.grid_voltage,
-        )
-
-    with p4:
-        st.metric(
-            "Location",
-            st.session_state.location,
-        )
-
-    st.divider()
-
-    b1, b2 = st.columns(
-        [3, 1]
-    )
-
-    with b1:
-        run_agent = st.button(
-            "🚀 Run Regulatory Intelligence Agent",
-            type="primary",
-            key="run_regulatory_agent",
-        )
-
-    with b2:
-        clear_result = st.button(
-            "↻ Clear Result",
-            key="clear_regulatory_result",
-        )
-
-    if clear_result:
-
-        clear_regulatory_result()
+        reset_workflow()
         st.rerun()
 
-    if run_agent:
 
-        if not question.strip():
+# =========================================================
+# FULL MULTI-AGENT WORKFLOW
+# =========================================================
 
-            st.warning(
-                "Please enter a regulatory question."
+if run_full_workflow:
+
+    if not groq_configured:
+
+        st.error(
+            "GROQ_API_KEY is not configured. "
+            "Add it to Streamlit Secrets before "
+            "running the full workflow."
+        )
+
+    else:
+
+        reset_workflow()
+
+        project = get_project()
+
+        # -------------------------------------------------
+        # Automatic regulatory question
+        # -------------------------------------------------
+
+        regulatory_question = (
+            f"What regulatory requirements should be "
+            f"considered for a {project['capacity']} MW "
+            f"{project['technology']} project in "
+            f"{project['location']} with a proposed "
+            f"{project['grid_voltage']} grid connection?"
+        )
+
+        # -------------------------------------------------
+        # Workflow status
+        # -------------------------------------------------
+
+        with st.status(
+            "Running SolarGrid AI multi-agent workflow...",
+            expanded=True,
+        ) as workflow_status:
+
+            # =================================================
+            # 1 — TECHNICAL ENGINEER
+            # =================================================
+
+            st.session_state.agent_technical = "Running"
+
+            st.write(
+                "⚙️ **1/6 — Technical Engineer**"
             )
 
-        elif not groq_configured:
-
-            st.error(
-                "GROQ_API_KEY is not configured."
+            st.write(
+                "Running deterministic solar PV "
+                "engineering calculations..."
             )
 
-        else:
+            try:
 
-            project = get_project()
+                technical_output = (
+                    analyze_technical_project(
+                        project=project,
+                        capacity_factor_pct=22.0,
+                        performance_ratio_pct=80.0,
+                        annual_degradation_pct=0.5,
+                        project_life_years=25,
+                    )
+                )
 
-            st.session_state.regulatory_result = None
-            st.session_state.regulatory_evidence = []
+                st.session_state.technical_result = (
+                    technical_output
+                )
 
-            with st.status(
-                "Running Regulatory Intelligence Agent...",
-                expanded=True,
-            ) as workflow_status:
+                st.session_state.agent_technical = (
+                    "Completed"
+                )
 
-                st.session_state.regulatory_stage = (
-                    "Retrieving evidence"
+                add_log(
+                    "Technical Engineer completed"
                 )
 
                 st.write(
-                    "🔎 **Stage 1/3 — "
-                    "Retrieving regulatory evidence...**"
+                    "✅ Technical screening completed."
                 )
+
+            except Exception as exc:
+
+                st.session_state.agent_technical = (
+                    "Error"
+                )
+
+                technical_output = {
+                    "answer": (
+                        "Technical Agent error: "
+                        f"{exc}"
+                    ),
+                    "results": {},
+                }
+
+                st.write(
+                    f"❌ Technical Agent error: {exc}"
+                )
+
+            # =================================================
+            # 2 — REGULATORY INTELLIGENCE
+            # =================================================
+
+            st.session_state.agent_regulatory = (
+                "Running"
+            )
+
+            st.write(
+                "📚 **2/6 — Regulatory Intelligence**"
+            )
+
+            st.write(
+                "Retrieving Pakistan-specific "
+                "regulatory evidence..."
+            )
+
+            try:
 
                 retrieval = (
                     retrieve_regulatory_evidence(
-                        query=question,
+                        query=regulatory_question,
                         rag=rag,
                         k=5,
                     )
                 )
 
-                evidence = retrieval["evidence"]
-                context = retrieval["context"]
-
-                st.session_state.regulatory_evidence = (
-                    evidence
+                regulatory_evidence = retrieval.get(
+                    "evidence",
+                    [],
                 )
 
-                if not evidence:
+                regulatory_context = retrieval.get(
+                    "context",
+                    "",
+                )
 
-                    st.session_state.regulatory_stage = (
-                        "No evidence"
-                    )
+                st.session_state.regulatory_evidence = (
+                    regulatory_evidence
+                )
 
-                    workflow_status.update(
-                        label=(
-                            "No regulatory evidence found"
-                        ),
-                        state="error",
-                    )
-
-                else:
+                if regulatory_evidence:
 
                     st.write(
-                        f"✅ Retrieved {len(evidence)} "
-                        "evidence passages."
+                        f"✅ Retrieved "
+                        f"{len(regulatory_evidence)} "
+                        "regulatory evidence passages."
                     )
 
-                    st.session_state.regulatory_stage = (
-                        "Analyzing evidence"
-                    )
-
-                    st.write(
-                        "🧠 **Stage 2/3 — "
-                        "GPT-OSS 120B analyzing evidence...**"
-                    )
-
-                    answer = (
+                    regulatory_answer = (
                         generate_regulatory_assessment(
-                            query=question,
+                            query=regulatory_question,
                             project=project,
-                            context=context,
-                            evidence=evidence,
+                            context=regulatory_context,
+                            evidence=regulatory_evidence,
                             max_tokens=1800,
                         )
                     )
 
-                    st.write(
-                        "✅ Evidence analysis completed."
+                    regulatory_output = {
+                        "answer": regulatory_answer,
+                        "evidence": regulatory_evidence,
+                    }
+
+                    st.session_state.regulatory_result = (
+                        regulatory_output
                     )
 
-                    st.session_state.regulatory_stage = (
+                    st.session_state.agent_regulatory = (
                         "Completed"
                     )
 
-                    st.write(
-                        "📝 **Stage 3/3 — "
-                        "Preparing final assessment...**"
+                    add_log(
+                        "Regulatory Intelligence completed"
                     )
+
+                    st.write(
+                        "✅ Regulatory assessment completed."
+                    )
+
+                else:
+
+                    regulatory_output = {
+                        "answer": (
+                            "No sufficient regulatory "
+                            "evidence was retrieved."
+                        ),
+                        "evidence": [],
+                    }
 
                     st.session_state.regulatory_result = (
-                        answer
+                        regulatory_output
                     )
 
-                    workflow_status.update(
-                        label="Regulatory workflow completed",
-                        state="complete",
+                    st.session_state.agent_regulatory = (
+                        "Error"
                     )
 
-            if st.session_state.regulatory_result:
+                    st.write(
+                        "❌ No regulatory evidence found."
+                    )
 
-                st.markdown(
-                    "## Regulatory Assessment"
+            except Exception as exc:
+
+                regulatory_output = {
+                    "answer": (
+                        "Regulatory Agent error: "
+                        f"{exc}"
+                    ),
+                    "evidence": [],
+                }
+
+                st.session_state.regulatory_result = (
+                    regulatory_output
                 )
 
-                st.markdown(
-                    st.session_state.regulatory_result
+                st.session_state.agent_regulatory = (
+                    "Error"
                 )
 
-                st.divider()
-
-                st.subheader(
-                    "📚 Evidence Used by the Agent"
+                st.write(
+                    f"❌ Regulatory Agent error: {exc}"
                 )
 
-                render_evidence(
-                    st.session_state.regulatory_evidence
+            # =================================================
+            # 3 — GRID ENGINEER
+            # =================================================
+
+            st.session_state.agent_grid = "Running"
+
+            st.write(
+                "🔌 **3/6 — Grid Integration Engineer**"
+            )
+
+            st.write(
+                "Performing preliminary grid-integration "
+                "screening using RAG evidence..."
+            )
+
+            try:
+
+                grid_output = (
+                    analyze_grid_project(
+                        project=project,
+                        rag=rag,
+                    )
                 )
 
-    elif st.session_state.regulatory_result:
+                st.session_state.grid_result = (
+                    grid_output
+                )
 
-        st.markdown(
-            "## Regulatory Assessment"
+                st.session_state.agent_grid = (
+                    "Completed"
+                )
+
+                add_log(
+                    "Grid Engineer completed"
+                )
+
+                st.write(
+                    "✅ Grid screening completed."
+                )
+
+            except Exception as exc:
+
+                grid_output = {
+                    "answer": (
+                        "Grid Agent error: "
+                        f"{exc}"
+                    ),
+                    "evidence": [],
+                }
+
+                st.session_state.grid_result = (
+                    grid_output
+                )
+
+                st.session_state.agent_grid = (
+                    "Error"
+                )
+
+                st.write(
+                    f"❌ Grid Agent error: {exc}"
+                )
+
+            # =================================================
+            # 4 — FINANCIAL ANALYST
+            # =================================================
+
+            st.session_state.agent_financial = (
+                "Running"
+            )
+
+            st.write(
+                "💰 **4/6 — Financial Analyst**"
+            )
+
+            st.write(
+                "Using Technical Engineer generation "
+                "results for preliminary financial screening..."
+            )
+
+            try:
+
+                technical_results = (
+                    technical_output.get(
+                        "results",
+                        {},
+                    )
+                )
+
+                financial_output = (
+                    analyze_financial_project(
+                        project=project,
+                        technical_results=technical_results,
+                        tariff_pkr_per_kwh=25.0,
+                        capex_million_pkr_per_mw=180.0,
+                        opex_pct_of_capex=2.0,
+                        discount_rate_pct=10.0,
+                        project_life_years=25,
+                    )
+                )
+
+                st.session_state.financial_result = (
+                    financial_output
+                )
+
+                st.session_state.agent_financial = (
+                    "Completed"
+                )
+
+                add_log(
+                    "Financial Analyst completed"
+                )
+
+                st.write(
+                    "✅ Financial screening completed."
+                )
+
+            except Exception as exc:
+
+                financial_output = {
+                    "answer": (
+                        "Financial Agent error: "
+                        f"{exc}"
+                    ),
+                    "results": {},
+                }
+
+                st.session_state.financial_result = (
+                    financial_output
+                )
+
+                st.session_state.agent_financial = (
+                    "Error"
+                )
+
+                st.write(
+                    f"❌ Financial Agent error: {exc}"
+                )
+
+            # =================================================
+            # 5 — RISK ANALYST
+            # =================================================
+
+            st.session_state.agent_risk = "Running"
+
+            st.write(
+                "⚠️ **5/6 — Risk Analyst**"
+            )
+
+            st.write(
+                "Cross-checking technical, regulatory, "
+                "grid and financial outputs..."
+            )
+
+            try:
+
+                risk_output = (
+                    analyze_project_risks(
+                        project=project,
+                        technical_output=technical_output,
+                        grid_output=grid_output,
+                        regulatory_output=regulatory_output,
+                        financial_output=financial_output,
+                    )
+                )
+
+                st.session_state.risk_result = (
+                    risk_output
+                )
+
+                st.session_state.agent_risk = (
+                    "Completed"
+                )
+
+                add_log(
+                    "Risk Analyst completed"
+                )
+
+                st.write(
+                    "✅ Risk analysis completed."
+                )
+
+            except Exception as exc:
+
+                risk_output = {
+                    "answer": (
+                        "Risk Agent error: "
+                        f"{exc}"
+                    ),
+                }
+
+                st.session_state.risk_result = (
+                    risk_output
+                )
+
+                st.session_state.agent_risk = (
+                    "Error"
+                )
+
+                st.write(
+                    f"❌ Risk Agent error: {exc}"
+                )
+
+            # =================================================
+            # 6 — PROJECT MANAGER
+            # =================================================
+
+            st.session_state.agent_project_manager = (
+                "Running"
+            )
+
+            st.write(
+                "🧠 **6/6 — Project Manager / "
+                "Synthesis Agent**"
+            )
+
+            st.write(
+                "Synthesizing specialist-agent outputs "
+                "into one preliminary assessment..."
+            )
+
+            try:
+
+                project_manager_output = (
+                    synthesize_project(
+                        project=project,
+                        technical_output=technical_output,
+                        grid_output=grid_output,
+                        regulatory_output=regulatory_output,
+                        financial_output=financial_output,
+                        risk_output=risk_output,
+                    )
+                )
+
+                st.session_state.project_manager_result = (
+                    project_manager_output
+                )
+
+                st.session_state.agent_project_manager = (
+                    "Completed"
+                )
+
+                add_log(
+                    "Project Manager synthesis completed"
+                )
+
+                st.session_state.workflow_complete = True
+
+                st.write(
+                    "✅ Integrated project assessment completed."
+                )
+
+                workflow_status.update(
+                    label=(
+                        "SolarGrid AI workflow completed"
+                    ),
+                    state="complete",
+                )
+
+            except Exception as exc:
+
+                project_manager_output = {
+                    "answer": (
+                        "Project Manager error: "
+                        f"{exc}"
+                    ),
+                }
+
+                st.session_state.project_manager_result = (
+                    project_manager_output
+                )
+
+                st.session_state.agent_project_manager = (
+                    "Error"
+                )
+
+                st.session_state.workflow_complete = False
+
+                st.write(
+                    f"❌ Project Manager error: {exc}"
+                )
+
+                workflow_status.update(
+                    label=(
+                        "SolarGrid AI workflow completed "
+                        "with errors"
+                    ),
+                    state="error",
+                )
+
+
+# =========================================================
+# RESULTS TABS
+# =========================================================
+
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    [
+        "📊 Feasibility Dashboard",
+        "🧠 AI Report",
+        "📚 Regulatory Evidence",
+        "⚙️ Technical",
+        "🔎 RAG Test Lab",
+        "📋 Diagnostics",
+    ]
+)
+
+
+# =========================================================
+# TAB 1 — FEASIBILITY DASHBOARD
+# =========================================================
+
+with tab1:
+
+    st.subheader(
+        "📊 Preliminary Feasibility Dashboard"
+    )
+
+    if not st.session_state.workflow_complete:
+
+        st.info(
+            "Run the full SolarGrid AI workflow to "
+            "populate the project assessment."
         )
 
-        st.markdown(
-            st.session_state.regulatory_result
+    else:
+
+        technical_output = (
+            st.session_state.technical_result
+            or {}
         )
+
+        technical_results = (
+            technical_output.get(
+                "results",
+                {},
+            )
+        )
+
+        financial_output = (
+            st.session_state.financial_result
+            or {}
+        )
+
+        financial_results = (
+            financial_output.get(
+                "results",
+                {},
+            )
+        )
+
+        d1, d2, d3, d4 = st.columns(4)
+
+        with d1:
+
+            st.metric(
+                "Year-1 Net Energy",
+                f"{technical_results.get('net_first_year_gwh', 0):,.2f} GWh",
+            )
+
+        with d2:
+
+            st.metric(
+                "Lifetime Energy",
+                f"{technical_results.get('lifetime_generation_gwh', 0):,.1f} GWh",
+            )
+
+        with d3:
+
+            st.metric(
+                "Simple Payback",
+                (
+                    f"{financial_results['simple_payback_years']:.2f} yrs"
+                    if financial_results.get(
+                        "simple_payback_years"
+                    ) is not None
+                    else "Not achieved"
+                ),
+            )
+
+        with d4:
+
+            st.metric(
+                "NPV",
+                f"{financial_results.get('npv_million_pkr', 0):,.1f} M PKR",
+            )
 
         st.divider()
 
-        st.subheader(
-            "📚 Evidence Used by the Agent"
+        st.markdown(
+            "### Agent Completion"
         )
 
-        render_evidence(
-            st.session_state.regulatory_evidence
+        statuses = [
+            (
+                "⚙️",
+                "Technical",
+                st.session_state.agent_technical,
+            ),
+            (
+                "📚",
+                "Regulatory",
+                st.session_state.agent_regulatory,
+            ),
+            (
+                "🔌",
+                "Grid",
+                st.session_state.agent_grid,
+            ),
+            (
+                "💰",
+                "Financial",
+                st.session_state.agent_financial,
+            ),
+            (
+                "⚠️",
+                "Risk",
+                st.session_state.agent_risk,
+            ),
+            (
+                "🧠",
+                "Project Manager",
+                st.session_state.agent_project_manager,
+            ),
+        ]
+
+        status_cols = st.columns(
+            len(statuses)
+        )
+
+        for col, (
+            icon,
+            name,
+            status_text,
+        ) in zip(
+            status_cols,
+            statuses,
+        ):
+
+            with col:
+
+                if status_text == "Completed":
+
+                    st.success(
+                        f"{icon} {name}\n\n"
+                        "Completed"
+                    )
+
+                elif status_text == "Error":
+
+                    st.error(
+                        f"{icon} {name}\n\n"
+                        "Error"
+                    )
+
+                else:
+
+                    st.info(
+                        f"{icon} {name}\n\n"
+                        f"{status_text}"
+                    )
+
+        st.divider()
+
+        st.markdown(
+            "### Key Screening Assumptions"
+        )
+
+        s1, s2, s3, s4 = st.columns(4)
+
+        with s1:
+            st.metric(
+                "Capacity Factor",
+                "22%",
+            )
+
+        with s2:
+            st.metric(
+                "Performance Ratio",
+                "80%",
+            )
+
+        with s3:
+            st.metric(
+                "Annual Degradation",
+                "0.5%",
+            )
+
+        with s4:
+            st.metric(
+                "Project Life",
+                "25 years",
+            )
+
+        st.caption(
+            "These are screening assumptions, not site "
+            "measurements or project-specific commercial terms."
         )
 
 
 # =========================================================
-# TAB 3 — TECHNICAL ENGINEER
+# TAB 2 — AI REPORT
+# =========================================================
+
+with tab2:
+
+    st.subheader(
+        "🧠 Integrated AI Project Assessment"
+    )
+
+    if (
+        st.session_state.project_manager_result
+        is None
+    ):
+
+        st.info(
+            "Run the full workflow to generate "
+            "the integrated AI report."
+        )
+
+    else:
+
+        report = (
+            st.session_state
+            .project_manager_result
+            .get(
+                "answer",
+                "",
+            )
+        )
+
+        st.markdown(
+            report
+        )
+
+
+# =========================================================
+# TAB 3 — REGULATORY EVIDENCE
 # =========================================================
 
 with tab3:
 
     st.subheader(
-        "⚙️ Technical Engineer Agent"
+        "📚 Regulatory Intelligence Evidence"
     )
 
-    st.caption(
-        "Preliminary solar PV energy screening using "
-        "deterministic engineering calculations."
-    )
+    if st.session_state.regulatory_evidence:
 
-    st.info(
-        "The values below are screening assumptions, "
-        "not site measurements or a bankable energy-yield study."
-    )
-
-    a1, a2, a3, a4 = st.columns(4)
-
-    with a1:
-
-        capacity_factor = st.number_input(
-            "Capacity Factor (%)",
-            min_value=1.0,
-            max_value=60.0,
-            value=22.0,
-            step=0.5,
-            key="capacity_factor",
+        render_evidence(
+            st.session_state.regulatory_evidence
         )
 
-    with a2:
+        st.divider()
 
-        performance_ratio = st.number_input(
-            "Performance Ratio (%)",
-            min_value=1.0,
-            max_value=100.0,
-            value=80.0,
-            step=1.0,
-            key="performance_ratio",
-        )
+        if st.session_state.regulatory_result:
 
-    with a3:
-
-        degradation = st.number_input(
-            "Annual Degradation (%)",
-            min_value=0.0,
-            max_value=10.0,
-            value=0.5,
-            step=0.1,
-            key="degradation",
-        )
-
-    with a4:
-
-        project_life = st.number_input(
-            "Project Life (years)",
-            min_value=1,
-            max_value=40,
-            value=25,
-            step=1,
-            key="project_life",
-        )
-
-    st.divider()
-
-    st.markdown(
-        "### Project Inputs"
-    )
-
-    t1, t2, t3 = st.columns(3)
-
-    with t1:
-        st.metric(
-            "Technology",
-            st.session_state.technology,
-        )
-
-    with t2:
-        st.metric(
-            "Capacity",
-            f"{st.session_state.capacity:g} MW",
-        )
-
-    with t3:
-        st.metric(
-            "Location",
-            st.session_state.location,
-        )
-
-    if st.button(
-        "⚙️ Run Technical Engineer",
-        type="primary",
-        key="run_technical_agent",
-    ):
-
-        project = get_project()
-
-        with st.status(
-            "Running Technical Engineer Agent...",
-            expanded=True,
-        ) as technical_status:
-
-            st.write(
-                "⚙️ **Stage 1/2 — "
-                "Running deterministic engineering calculations...**"
+            st.markdown(
+                "### Regulatory Agent Assessment"
             )
 
-            technical_output = (
-                analyze_technical_project(
-                    project=project,
-                    capacity_factor_pct=capacity_factor,
-                    performance_ratio_pct=performance_ratio,
-                    annual_degradation_pct=degradation,
-                    project_life_years=project_life,
+            st.markdown(
+                st.session_state
+                .regulatory_result
+                .get(
+                    "answer",
+                    "",
                 )
             )
 
-            results = technical_output["results"]
+    else:
 
-            st.write(
-                "✅ Engineering calculations completed."
-            )
-
-            st.write(
-                "🧠 **Stage 2/2 — "
-                "GPT-OSS 120B interpreting technical results...**"
-            )
-
-            st.write(
-                "✅ Technical interpretation completed."
-            )
-
-            technical_status.update(
-                label="Technical Engineer completed",
-                state="complete",
-            )
-
-        st.session_state.technical_result = (
-            technical_output
+        st.info(
+            "No regulatory evidence has been retrieved yet."
         )
 
-    if st.session_state.technical_result:
+
+# =========================================================
+# TAB 4 — TECHNICAL
+# =========================================================
+
+with tab4:
+
+    st.subheader(
+        "⚙️ Technical Engineer Results"
+    )
+
+    if st.session_state.technical_result is None:
+
+        st.info(
+            "Run the full workflow to generate "
+            "technical results."
+        )
+
+    else:
 
         output = (
             st.session_state.technical_result
         )
 
-        results = output["results"]
-
-        st.markdown(
-            "### Preliminary Technical Results"
+        results = output.get(
+            "results",
+            {},
         )
 
-        r1, r2, r3, r4 = st.columns(4)
+        t1, t2, t3, t4 = st.columns(4)
 
-        with r1:
+        with t1:
+
             st.metric(
                 "Gross Annual Energy",
-                f"{results['gross_annual_mwh'] / 1000:,.2f} GWh",
+                f"{results.get('gross_annual_mwh', 0) / 1000:,.2f} GWh",
             )
 
-        with r2:
+        with t2:
+
             st.metric(
-                "Year 1 Net Energy",
-                f"{results['net_first_year_gwh']:,.2f} GWh",
+                "Year-1 Net Energy",
+                f"{results.get('net_first_year_gwh', 0):,.2f} GWh",
             )
 
-        with r3:
+        with t3:
+
             st.metric(
                 "Full-Load Hours",
-                f"{results['equivalent_full_load_hours']:,.0f} h",
+                f"{results.get('equivalent_full_load_hours', 0):,.0f} h",
             )
 
-        with r4:
+        with t4:
+
             st.metric(
                 "25-Year Energy",
-                f"{results['lifetime_generation_gwh']:,.1f} GWh",
+                f"{results.get('lifetime_generation_gwh', 0):,.1f} GWh",
             )
 
         st.divider()
@@ -896,49 +1421,26 @@ with tab3:
         )
 
         st.markdown(
-            output["answer"]
-        )
-
-        st.divider()
-
-        st.markdown(
-            "### Calculation Assumptions"
-        )
-
-        st.write(
-            f"Capacity factor: "
-            f"{results['capacity_factor_pct']:.1f}%"
-        )
-
-        st.write(
-            f"Performance ratio: "
-            f"{results['performance_ratio_pct']:.1f}%"
-        )
-
-        st.write(
-            f"Annual degradation: "
-            f"{results['annual_degradation_pct']:.1f}%"
-        )
-
-        st.write(
-            f"Project life: "
-            f"{results['project_life_years']} years"
+            output.get(
+                "answer",
+                "",
+            )
         )
 
 
 # =========================================================
-# TAB 4 — RAG TEST LAB
+# TAB 5 — RAG TEST LAB
 # =========================================================
 
-with tab4:
+with tab5:
 
     st.subheader(
-        "RAG Retrieval Test Lab"
+        "🔎 RAG Retrieval Test Lab"
     )
 
     st.caption(
-        "Verify evidence retrieval across different "
-        "Pakistan energy topics."
+        "Test retrieval across different Pakistan "
+        "renewable-energy topics."
     )
 
     test_questions = [
@@ -1003,13 +1505,17 @@ with tab4:
 
 
 # =========================================================
-# TAB 5 — DIAGNOSTICS
+# TAB 6 — DIAGNOSTICS
 # =========================================================
 
-with tab5:
+with tab6:
 
     st.subheader(
-        "Knowledge Base Diagnostics"
+        "📋 Diagnostics"
+    )
+
+    st.markdown(
+        "### Knowledge Base"
     )
 
     st.json(
@@ -1037,36 +1543,41 @@ with tab5:
             f"✓ {title}"
         )
 
+    st.divider()
+
     st.markdown(
-        "### Indexed Evidence Passages"
+        "### Agent Activity Log"
     )
 
-    for document in rag.documents:
+    if st.session_state.activity_log:
 
-        title = document.get(
-            "title",
-            "Unknown source",
-        )
+        for item in st.session_state.activity_log:
 
-        section = document.get(
-            "section",
-            "General",
-        )
-
-        authority = document.get(
-            "authority",
-            "",
-        )
-
-        label = (
-            f"{title} → {section}"
-        )
-
-        if authority:
-            label += (
-                f" | {authority}"
+            st.write(
+                f"✓ {item}"
             )
 
+    else:
+
         st.caption(
-            label
+            "No full workflow has been executed yet."
         )
+
+    st.divider()
+
+    st.markdown(
+        "### Agent Status"
+    )
+
+    st.json(
+        {
+            "technical": st.session_state.agent_technical,
+            "regulatory": st.session_state.agent_regulatory,
+            "grid": st.session_state.agent_grid,
+            "financial": st.session_state.agent_financial,
+            "risk": st.session_state.agent_risk,
+            "project_manager": (
+                st.session_state.agent_project_manager
+            ),
+        }
+    )
