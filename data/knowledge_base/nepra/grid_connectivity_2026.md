@@ -12,161 +12,97 @@
 
 **Status:** Final notification — S.R.O. 693(I)/2026
 
+**Jurisdiction:** Pakistan
+
 **Official Source:** https://nepra.org.pk/Legislation/3-Reg/3.38National%20Electric%20Power%20Regulatory%20Authority%20(Technical%20Standards%20for%20Grid%20Connectivity)%20Regulations%202026/SRO%20693(I)-2026%20Dated%2027-04-2026%20Grid%20Conncetivity%20Regulations.pdf
 
 ---
 
 ## Scope and Applicability
 
-The National Electric Power Regulatory Authority (Technical Standards for Grid Connectivity) Regulations, 2026 apply to generation companies connected with the grid, except distributed generators.
+These regulations are called the National Electric Power Regulatory Authority (Technical Standards for Grid Connectivity) Regulations, 2026.
 
-The regulations define a generation company as a person engaged in the generation of electric power and a generation facility as an electrical facility used for the production of electric power.
+They apply to generation companies connected with the grid, except distributed generators.
 
-The regulations therefore provide a regulatory framework for grid-connected generation facilities that fall within their scope.
+The regulations define:
+
+- "generation company" as a person engaged in the generation of electric power;
+- "generation facility" as the electrical facility used for the production of electric power;
+- "Grid Code" as the code prepared by the system operator and approved by the Authority;
+- "Connection Code" as a sub-code provided in the Grid Code;
+- "Distribution Code" as the code prepared by distribution licensees and approved by the Authority.
 
 ---
 
 ## Interconnection Application
 
-The regulations require an applicant to submit an application to the appropriate transmission licensee or distribution licensee for interconnection of its generation facility.
+An applicant for interconnection of a generation facility must submit an application to the appropriate transmission licensee or distribution licensee, as applicable.
 
-The application must be made in accordance with the relevant provisions of the Grid Code or Distribution Code and is associated with execution of a connection agreement.
+The application is made in accordance with the relevant provisions of the Grid Code or Distribution Code and the execution of a connection agreement.
 
-The application must include an undertaking regarding compliance with the general principles specified in the regulations.
+The application must be accompanied by:
 
-The application must also include information and data required by the appropriate transmission licensee or distribution licensee.
+1. An undertaking regarding compliance with the requirements of the general principles in the regulations.
+2. Information and data required by the appropriate transmission licensee or distribution licensee.
 
 ---
 
 ## Connection Agreement
 
-The regulations provide that the connection agreement shall contain general and specific technical conditions related to interconnection.
+The connection agreement shall contain general and specific technical conditions related to interconnection.
 
-The appropriate transmission licensee or distribution licensee therefore has a role in the formal interconnection process and in establishing the applicable technical conditions through the connection agreement.
-
-The precise technical conditions applicable to a particular project cannot be established from this regulation alone and may depend on the applicable Grid Code, Distribution Code, connection arrangements, and requirements of the relevant licensee.
+The appropriate transmission licensee or distribution licensee is involved in the interconnection process and in establishing the technical conditions contained in the connection agreement.
 
 ---
 
-## Technical Compliance
+## General Technical Principles
 
-The applicant must ensure that interconnection of its generation facility does not adversely affect the safe operation, integrity, and reliability of the grid.
+The applicant shall ensure that interconnection of its generation facility does not adversely affect:
 
-Equipment and machinery installed by the applicant must comply with the technical standards specified in the applicable Connection Code of the Grid Code or Distribution Code.
+- safe operation of the grid;
+- integrity of the grid;
+- reliability of the grid.
 
-The applicant must design, construct, and operate its generation facility in a manner that supports safe, reliable, non-discriminatory, and economic dispatch and operation of the national grid and connected facilities.
+Equipment and machinery installed by the applicant shall comply with the technical standards specified in the applicable Connection Code of the Grid Code or Distribution Code.
+
+The applicant shall design, construct and operate the generation facility so as to ensure the safe, reliable, non-discriminatory and economic dispatch and operation of the national grid and connected facilities.
 
 ---
 
 ## Demonstration of Compliance
 
-At the time of submitting an application for permission to interconnect and execution of a connection agreement, the applicant must demonstrate compliance with the applicable Connection Code.
+At the time of submission of an application for permission to interconnect and execution of a connection agreement, the applicant shall demonstrate compliance with the Connection Code.
 
-During operation of the generation facility, the applicant must comply with the applicable provisions of the Grid Code and Distribution Code.
-
-The regulation therefore establishes an ongoing technical-compliance obligation rather than limiting compliance to the initial interconnection application.
+During operation of the generation facility, the applicant shall comply with the applicable provisions of the Grid Code and Distribution Code.
 
 ---
 
 ## Access at the Generation Facility
 
-The applicant must provide reasonable access and other required facilities to the appropriate transmission licensee or distribution licensee for the purpose of onsite interconnection.
-
-The specific access arrangements for a project depend on the applicable interconnection arrangement and requirements of the relevant licensee.
+The applicant shall provide reasonable access and other required facilities to the appropriate transmission licensee or distribution licensee for the purpose of onsite interconnection.
 
 ---
 
-## Role of Transmission and Distribution Licensees
+## Directions and Guidelines
 
-The regulations distinguish between the appropriate transmission licensee and distribution licensee.
+For carrying out the purposes of the regulations, the Authority may issue directions, instructions and guidelines to the applicant and the appropriate transmission licensee or distribution licensee.
 
-An applicant submits its interconnection application to the appropriate transmission licensee or distribution licensee, as applicable.
-
-The applicable licensee also determines information and data required for the application and participates in establishing the technical conditions contained in the connection agreement.
-
-The correct licensee and connection arrangement are therefore project-specific matters that must be established from the proposed interconnection.
+The Authority may modify or cancel such directions, instructions or guidelines and may impose conditions in doing so.
 
 ---
 
-## Project-Specific Interpretation for SolarGrid AI
+## Resolution of Disputes
 
-For a proposed utility-scale solar PV project, this regulation is relevant when the project is being assessed as a grid-connected generation facility.
-
-However, project capacity and technology alone do not establish the exact connection voltage, connection point, applicable licensee, technical study package, or detailed equipment requirements.
-
-Those project-specific matters require additional evidence from the applicable Grid Code, Distribution Code, connection arrangements, relevant licensee requirements, and other applicable regulatory documents.
-
-SolarGrid AI must therefore avoid claiming that a particular grid study, protection setting, voltage level, or approval sequence is mandatory unless the relevant evidence explicitly establishes it.
+Any dispute or disagreement between the applicant and the appropriate transmission licensee or distribution licensee relating to matters covered by these regulations shall be submitted to the Authority for decision.
 
 ---
 
-## What This Regulation Establishes
+## Non-Compliance
 
-The regulation establishes that:
-
-1. Grid-connected generation companies within its scope are subject to the technical standards framework.
-2. An interconnection application must be submitted to the appropriate transmission or distribution licensee.
-3. The application is made in accordance with the relevant Grid Code or Distribution Code.
-4. The application is associated with execution of a connection agreement.
-5. The application must include an undertaking regarding compliance with the specified general principles.
-6. The applicant must provide information and data required by the relevant licensee.
-7. The generation facility and its equipment must comply with applicable technical standards.
-8. The applicant must demonstrate compliance with the applicable Connection Code.
-9. The generation facility must be designed, constructed, and operated without adversely affecting safe operation, integrity, and reliability of the grid.
-10. The applicant must provide reasonable access and required facilities for onsite interconnection.
+Failure, refusal or contravention of the provisions of the regulations, or of directions or orders issued by the Authority, may result in penalties in accordance with the relevant provisions of the Act and applicable documents.
 
 ---
 
-## What This Regulation Does Not Establish by Itself
-
-This regulation alone does not establish a universal project-specific connection voltage for every generation project.
-
-It does not, by itself, establish that every project must conduct a particular combination of load-flow, short-circuit, stability, harmonic, or other studies.
-
-It does not establish the available capacity of a particular feeder, substation, transmission line, or connection point.
-
-It does not establish that a particular 50 MW solar project is technically feasible at a particular connection point.
-
-It does not establish project-specific equipment ratings, protection settings, reactive-power requirements, or metering specifications without reference to the applicable technical codes and project-specific requirements.
-
-It does not by itself establish a project's licensing, tariff, power-purchase, land, environmental, or financing requirements.
-
----
-
-## Evidence Classification
-
-**Source-backed regulatory facts:** Applicability, interconnection application, connection agreement, required information and data, technical compliance, Connection Code compliance, grid reliability obligations, and onsite access requirements.
-
-**Project interpretation:** SolarGrid AI may use these provisions to identify the regulatory areas that should be investigated for a proposed grid-connected renewable-energy project.
-
-**Not established:** Specific connection voltage, exact grid-study package, available network capacity, detailed protection settings, or project approval unless supported by additional evidence.
-
----
-
-## Regulatory Significance for SolarGrid AI
-
-This source should be treated as a primary regulatory source when evaluating the grid-connectivity dimension of a grid-connected generation project.
-
-The Regulatory Intelligence Agent should use this source to identify confirmed obligations while distinguishing them from project-specific requirements that require additional evidence.
-
-The agent should not convert examples, assumptions, or general engineering practice into mandatory regulatory requirements.
-
----
-
-## Limitations
-
-This document summarizes selected provisions relevant to preliminary project screening.
-
-It is not a substitute for the complete NEPRA notification, applicable Grid Code, Distribution Code, connection agreement, licensee requirements, or project-specific technical studies.
-
-For formal regulatory decisions, the original official documents and applicable authorities should be consulted.
-
----
-
-## Citation
+## Source Reference
 
 National Electric Power Regulatory Authority (NEPRA), National Electric Power Regulatory Authority (Technical Standards for Grid Connectivity) Regulations, 2026, S.R.O. 693(I)/2026, notified 27 April 2026.
-
-Official source:
-
-https://nepra.org.pk/Legislation/3-Reg/3.38National%20Electric%20Power%20Regulatory%20Authority%20(Technical%20Standards%20for%20Grid%20Connectivity)%20Regulations%202026/SRO%20693(I)-2026%20Dated%2027-04-2026%20Grid%20Conncetivity%20Regulations.pdf
