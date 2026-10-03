@@ -52,11 +52,11 @@ st.markdown(
 # =========================================================
 
 @st.cache_resource
-def load_rag():
+def load_rag(version):
     return LocalRAG()
 
 
-rag = load_rag()
+rag = load_rag("rag-v3")
 
 
 # =========================================================
